@@ -1,0 +1,19 @@
+{
+  "name": "jev-universal",
+  "version": "0.2.0",
+  "description": "Jev classification, scoring, checks and context selection through MCP",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Jev Universal",
+    "shortDescription": "Fast structured decisions with Jev",
+    "longDescription": "Jev classification, scoring, checks and context selection through MCP",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Help me use Jev Universal."
+  },
+  "mcpServers": "./.mcp.json"
+}

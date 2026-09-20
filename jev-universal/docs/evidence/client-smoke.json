@@ -1,0 +1,86 @@
+[
+  {
+    "client": "Claude Code 2.1.266 / claude-sonnet-4-6",
+    "date": "2026-09-20",
+    "tool": "jev_select_context",
+    "arguments": {
+      "goal": "integration smoke",
+      "chunks": [
+        {
+          "id": "sentinel",
+          "text": "KEEP-EXACT-2026",
+          "pinned": true
+        }
+      ]
+    },
+    "result": {
+      "kept": [
+        {
+          "id": "sentinel",
+          "text": "KEEP-EXACT-2026",
+          "pinned": true
+        }
+      ],
+      "omitted_ids": [],
+      "evaluation": {
+        "answers": {},
+        "review_required": []
+      },
+      "originals_must_be_retained": true
+    },
+    "paid_typesafe_api_called": false
+  },
+  {
+    "client": "Kimi Code 2.0.2 / kimi-code/k3",
+    "date": "2026-09-20",
+    "tool": "jev_select_context",
+    "arguments": {
+      "chunks": [
+        {
+          "id": "sentinel",
+          "pinned": true,
+          "text": "KEEP-EXACT-2026"
+        }
+      ],
+      "goal": "integration smoke"
+    },
+    "result": {
+      "kept": [
+        {
+          "id": "sentinel",
+          "text": "KEEP-EXACT-2026",
+          "pinned": true
+        }
+      ],
+      "omitted_ids": [],
+      "evaluation": {
+        "answers": {},
+        "review_required": []
+      },
+      "originals_must_be_retained": true
+    },
+    "paid_typesafe_api_called": false
+  },
+  {
+    "client": "ZCode bundled CLI 0.16.5 / GLM-5.3",
+    "date": "2026-09-20",
+    "tool": "jev_select_context",
+    "result": {
+      "kept": [
+        {
+          "id": "sentinel",
+          "text": "KEEP-EXACT-2026",
+          "pinned": true
+        }
+      ],
+      "omitted_ids": [],
+      "evaluation": {
+        "answers": {},
+        "review_required": []
+      },
+      "originals_must_be_retained": true
+    },
+    "paid_typesafe_api_called": false,
+    "evidence_source": "actual role=tool entry in model IO record"
+  }
+]

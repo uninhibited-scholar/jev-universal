@@ -1,0 +1,5 @@
+{
+  "name": "jev-universal",
+  "owner": {"name": "uninhibited-scholar"},
+  "plugins": [{"name": "jev-universal", "source": "./jev-universal", "description": "Jev structured decision tools over MCP", "version": "0.2.0"}]
+}
