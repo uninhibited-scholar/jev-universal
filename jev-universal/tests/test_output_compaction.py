@@ -82,7 +82,9 @@ class OutputCompactionTests(unittest.TestCase):
 
     def test_recall_can_select_lines_or_search(self):
         text = "alpha\nbeta marker\ngamma\nbeta again"
-        self.assertEqual(select_lines(text, "2-3", None), "matched 2 of 4 lines\n2: beta marker\n3: gamma")
+        self.assertEqual(
+            select_lines(text, "2-3", None), "matched 2 of 4 lines\n2: beta marker\n3: gamma"
+        )
         self.assertIn("2: beta marker\n4: beta again", select_lines(text, None, "beta"))
 
     def test_stale_cleanup_removes_only_old_valid_session_directories(self):
@@ -92,6 +94,7 @@ class OutputCompactionTests(unittest.TestCase):
         other_dir.mkdir()
         old_time = 1
         import os
+
         os.utime(old_dir, (old_time, old_time))
         os.utime(other_dir, (old_time, old_time))
         cleanup_stale(self.root, max_age_seconds=1)
