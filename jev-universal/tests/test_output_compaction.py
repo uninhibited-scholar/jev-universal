@@ -1,3 +1,4 @@
+import os
 import stat
 import sys
 import tempfile
@@ -40,11 +41,12 @@ class OutputCompactionTests(unittest.TestCase):
         self.assertIn("command has already run", result["stopReason"])
         output_id = result["stopReason"].split("recall id `", 1)[1].split("`", 1)[0]
         self.assertEqual(read_output(output_id, self.root), self.event["tool_response"])
-        session_dir = next(self.root.glob("session-*"))
-        output_file = next(session_dir.glob("*.txt"))
-        self.assertEqual(stat.S_IMODE(self.root.stat().st_mode), 0o700)
-        self.assertEqual(stat.S_IMODE(session_dir.stat().st_mode), 0o700)
-        self.assertEqual(stat.S_IMODE(output_file.stat().st_mode), 0o600)
+        if os.name == "posix":
+            session_dir = next(self.root.glob("session-*"))
+            output_file = next(session_dir.glob("*.txt"))
+            self.assertEqual(stat.S_IMODE(self.root.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE(session_dir.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE(output_file.stat().st_mode), 0o600)
 
     def test_store_refuses_symlinked_root(self):
         target = self.root / "target"
@@ -71,8 +73,6 @@ class OutputCompactionTests(unittest.TestCase):
         self.assertEqual(read_output(output_id, self.root), self.event["tool_response"])
         output_path = next(self.root.glob("session-*/*.txt"))
         old_time = output_path.stat().st_mtime - OUTPUT_TTL_SECONDS - 1
-        import os
-
         os.utime(output_path, (old_time, old_time))
         with self.assertRaisesRegex(FileNotFoundError, "expired"):
             read_output(output_id, self.root)
@@ -98,8 +98,6 @@ class OutputCompactionTests(unittest.TestCase):
         old_dir.mkdir()
         other_dir.mkdir()
         old_time = 1
-        import os
-
         os.utime(old_dir, (old_time, old_time))
         os.utime(other_dir, (old_time, old_time))
         cleanup_stale(self.root, max_age_seconds=1)
@@ -109,8 +107,6 @@ class OutputCompactionTests(unittest.TestCase):
     def test_stale_cleanup_removes_expired_files_even_in_recent_sessions(self):
         _, output_path = store_output(self.session_id, "expired", self.root)
         expired = output_path.stat().st_mtime - OUTPUT_TTL_SECONDS - 1
-        import os
-
         os.utime(output_path, (expired, expired))
         cleanup_stale(self.root)
         self.assertFalse(output_path.exists())
