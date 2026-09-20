@@ -7,7 +7,8 @@
     "078",
     "079",
     "080",
-    "081"
+    "081",
+    "082"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -657,5 +658,107 @@
     "skill_description": "For unfamiliar multi-file coding tasks; read this Skill by itself before repository exploration, and skip when source and check are already clear."
   },
   "current_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
-  "current_skill_size_bytes": 1123
+  "current_skill_size_bytes": 1123,
+  "follow_up_082_oauth_url_validation_bugfix": {
+    "source_commit": "2857218663541cc9a6c6037462d1dd8b20835f41",
+    "model": "gpt-5.5",
+    "task": "Reject malformed and out-of-range explicit ports during startup validation of JEV_PUBLIC_URL, JEV_OAUTH_ISSUER, and JEV_OAUTH_JWKS_URL; preserve omitted and valid ports.",
+    "prompt_sha256": "9b6b0fb8b9bfcdf07441ae22039d278b328fcd40ff4fcbcc60c68fd04903d5c0",
+    "skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "skill_size_bytes": 1123,
+    "control": "Byte-identical prompt and frozen tracked files; treatment workspace alone had the auto-discoverable project Skill.",
+    "changed_files": [
+      "jev-universal/src/jev_universal/auth.py",
+      "jev-universal/tests/test_auth.py"
+    ],
+    "existing_tests": "All five existing auth test functions AST-equivalent in all arms; each arm added distinct port regression tests.",
+    "runs": [
+      {
+        "pair": "082-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 323125,
+        "cached_input_tokens_subset": 295808,
+        "output_tokens": 5089,
+        "total_tokens": 328214,
+        "tool_actions": 30,
+        "elapsed_seconds": 124.87,
+        "exit_code": 0,
+        "cost_usd": null,
+        "independent_full_tests": "60 passed",
+        "targeted_ruff": "passed"
+      },
+      {
+        "pair": "082-A",
+        "order": 2,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 451064,
+        "cached_input_tokens_subset": 417152,
+        "output_tokens": 6770,
+        "total_tokens": 457834,
+        "tool_actions": 32,
+        "elapsed_seconds": 155.875,
+        "exit_code": 0,
+        "cost_usd": null,
+        "independent_full_tests": "61 passed",
+        "targeted_ruff": "passed"
+      },
+      {
+        "pair": "082-B",
+        "order": 1,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 604838,
+        "cached_input_tokens_subset": 561152,
+        "output_tokens": 5759,
+        "total_tokens": 610597,
+        "tool_actions": 26,
+        "elapsed_seconds": 146.26,
+        "exit_code": 0,
+        "cost_usd": null,
+        "independent_full_tests": "61 passed",
+        "targeted_ruff": "passed"
+      },
+      {
+        "pair": "082-B",
+        "order": 2,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 512000,
+        "cached_input_tokens_subset": 477312,
+        "output_tokens": 7976,
+        "total_tokens": 519976,
+        "tool_actions": 42,
+        "elapsed_seconds": 185.045,
+        "exit_code": 0,
+        "cost_usd": null,
+        "independent_full_tests": "61 passed",
+        "targeted_ruff": "passed"
+      }
+    ],
+    "aggregate": {
+      "baseline_input_tokens": 835125,
+      "skill_input_tokens": 1055902,
+      "baseline_output_tokens": 13065,
+      "skill_output_tokens": 12529,
+      "baseline_total_tokens": 848190,
+      "skill_total_tokens": 1068431,
+      "skill_token_change_percent": 26.0,
+      "baseline_cached_input_tokens_subset": 773120,
+      "skill_cached_input_tokens_subset": 978304,
+      "baseline_tool_actions": 72,
+      "skill_tool_actions": 58,
+      "baseline_elapsed_seconds": 309.915,
+      "skill_elapsed_seconds": 302.135,
+      "usd_cost": null
+    },
+    "limitations": [
+      "One task family only.",
+      "Both pairs used more total tokens with the Skill (+39.5%, +17.4%).",
+      "The task has a narrow shared validator and explicit acceptance cases; current Skill trigger may be too broad for this shape.",
+      "Codex subscription traces do not expose per-run USD cost."
+    ]
+  }
 }

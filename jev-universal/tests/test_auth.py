@@ -64,6 +64,58 @@ def test_public_binding_requires_auth(monkeypatch):
         create_server()
 
 
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("JEV_PUBLIC_URL", "https://jev.example.com:bad/mcp"),
+        ("JEV_PUBLIC_URL", "https://jev.example.com:0/mcp"),
+        ("JEV_PUBLIC_URL", "https://jev.example.com:65536/mcp"),
+        ("JEV_OAUTH_ISSUER", "https://issuer.example.com:bad/"),
+        ("JEV_OAUTH_ISSUER", "https://issuer.example.com:0/"),
+        ("JEV_OAUTH_ISSUER", "https://issuer.example.com:65536/"),
+        ("JEV_OAUTH_JWKS_URL", "https://issuer.example.com:bad/jwks"),
+        ("JEV_OAUTH_JWKS_URL", "https://issuer.example.com:0/jwks"),
+        ("JEV_OAUTH_JWKS_URL", "https://issuer.example.com:65536/jwks"),
+    ],
+)
+def test_oauth_urls_reject_invalid_explicit_ports(monkeypatch, name, value):
+    monkeypatch.setenv("JEV_PUBLIC_URL", RESOURCE)
+    monkeypatch.setenv("JEV_OAUTH_ISSUER", ISSUER)
+    monkeypatch.setenv("JEV_OAUTH_JWKS_URL", "https://issuer.example.com/jwks")
+    monkeypatch.setenv(name, value)
+
+    with pytest.raises(ValueError, match=rf"{name} must include a valid port in 1-65535"):
+        create_server()
+
+
+@pytest.mark.parametrize(
+    ("public", "issuer", "jwks"),
+    [
+        (
+            "https://jev.example.com/mcp",
+            "https://issuer.example.com/",
+            "https://issuer.example.com/jwks",
+        ),
+        (
+            "https://jev.example.com:1/mcp",
+            "https://issuer.example.com:1/",
+            "https://issuer.example.com:1/jwks",
+        ),
+        (
+            "https://jev.example.com:65535/mcp",
+            "https://issuer.example.com:65535/",
+            "https://issuer.example.com:65535/jwks",
+        ),
+    ],
+)
+def test_oauth_urls_accept_omitted_and_valid_explicit_ports(monkeypatch, public, issuer, jwks):
+    monkeypatch.setenv("JEV_PUBLIC_URL", public)
+    monkeypatch.setenv("JEV_OAUTH_ISSUER", issuer)
+    monkeypatch.setenv("JEV_OAUTH_JWKS_URL", jwks)
+
+    create_server()
+
+
 def test_http_auth_and_discovery(monkeypatch, signing):
     monkeypatch.setenv("JEV_PUBLIC_URL", RESOURCE)
     monkeypatch.setenv("JEV_OAUTH_ISSUER", ISSUER)

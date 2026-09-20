@@ -26,8 +26,10 @@ the Skill and its runner. The latest 1,123-character version used 35.1% fewer
 tokens across two same-prompt, order-balanced repetitions of an output-recall
 CLI feature; it also used 28 fewer tool actions and 33.9% less time. All 52
 package tests passed in each arm. This is one task family, so it does not
-establish general savings. Earlier P077/P078 results used an extra “read the
-Skill” treatment instruction and are not clean estimates of Skill efficacy.
+establish general savings. On a distinct OAuth URL-validation bugfix, this
+same Skill used 26.0% more tokens, despite fewer tool actions and slightly
+lower elapsed time. Earlier P077/P078 results used an extra “read the Skill”
+treatment instruction and are not clean estimates of Skill efficacy.
 The 2x target remains unmet. See the
 [pilot and research notes](jev-universal/docs/efficiency-research.md)
 for the full evidence and limits.
