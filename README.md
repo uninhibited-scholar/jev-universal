@@ -30,6 +30,28 @@ The target remains at least 2x fewer total tokens, with 10x as a stretch goal.
 Neither has been demonstrated. The Skill is an experimental workflow prompt,
 not a proven efficiency improvement; evaluation continues.
 
+## Optional: Codex large-output hook
+
+The plugin also contains an experimental Codex-only hook that replaces large
+Bash results with a short preview and a local recall command. In four
+order-balanced pairs (eight runs) on two test-heavy coding tasks, it reduced
+combined total tokens by 9.5%;
+the larger task varied from 6.3% to 20.6% savings when run order reversed. This
+is not a multi-fold result and does not apply to Claude, Kimi, or ZCode. The
+hook needs no API key or network service. Captured output is recallable for one
+hour; expired files are pruned opportunistically. It skips recognized test
+failures and likely secret patterns.
+Install the GitHub marketplace entry with Codex CLI:
+
+```sh
+codex plugin marketplace add uninhibited-scholar/jev-universal --ref main --sparse .agents/plugins --sparse jev-universal
+codex plugin add jev-universal@jev-universal
+```
+
+Then review and trust the bundled hook with `/hooks`. See the [hook notes and
+measurements](jev-universal/docs/efficiency-research.md). The Skill can be used
+in other clients, but this automatic output hook currently runs only in Codex.
+
 ## Optional: TypeSafe API adapter
 
 The repository also retains an MCP adapter for people who already have TypeSafe

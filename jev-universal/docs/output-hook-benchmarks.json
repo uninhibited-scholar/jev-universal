@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-21",
+  "model": "gpt-5.5",
+  "billing_cost_usd": null,
+  "treatment": "Same compact Jev Skill and prompt in both arms; candidate adds the Codex PostToolUse output-compaction hook.",
+  "hook_threshold": "Bash output >= 4000 UTF-8 bytes OR >= 36 lines; detected failure output for test/build/lint commands and likely secret patterns bypass compaction.",
+  "runs": [
+    {"pilot":"070","task":"slugify, 50 tests","order":1,"arm":"baseline","input_tokens":81458,"cached_input_tokens":70528,"output_tokens":796,"total_tokens":82254,"completed_actions":4,"elapsed_seconds":28.29,"tests":"50 passed","exit_code":0},
+    {"pilot":"070","task":"slugify, 50 tests","order":2,"arm":"candidate","input_tokens":75997,"cached_input_tokens":62336,"output_tokens":787,"total_tokens":76784,"completed_actions":4,"elapsed_seconds":25.80,"tests":"50 passed","exit_code":0},
+    {"pilot":"071","task":"slugify, 50 tests","order":1,"arm":"candidate","input_tokens":76026,"cached_input_tokens":67456,"output_tokens":780,"total_tokens":76806,"completed_actions":4,"elapsed_seconds":24.22,"tests":"50 passed","exit_code":0},
+    {"pilot":"071","task":"slugify, 50 tests","order":2,"arm":"baseline","input_tokens":76692,"cached_input_tokens":67456,"output_tokens":661,"total_tokens":77353,"completed_actions":4,"elapsed_seconds":21.98,"tests":"50 passed","exit_code":0},
+    {"pilot":"072","task":"slugify, 168 tests","order":1,"arm":"baseline","input_tokens":100991,"cached_input_tokens":86272,"output_tokens":719,"total_tokens":101710,"completed_actions":4,"elapsed_seconds":26.37,"tests":"168 passed","exit_code":0},
+    {"pilot":"072","task":"slugify, 168 tests","order":2,"arm":"candidate","input_tokens":79933,"cached_input_tokens":71552,"output_tokens":837,"total_tokens":80770,"completed_actions":3,"elapsed_seconds":25.67,"tests":"168 passed","exit_code":0},
+    {"pilot":"073","task":"slugify, 168 tests","order":1,"arm":"candidate","input_tokens":63580,"cached_input_tokens":49664,"output_tokens":681,"total_tokens":64261,"completed_actions":2,"elapsed_seconds":24.03,"tests":"168 passed","exit_code":0},
+    {"pilot":"073","task":"slugify, 168 tests","order":2,"arm":"baseline","input_tokens":67990,"cached_input_tokens":55808,"output_tokens":608,"total_tokens":68598,"completed_actions":2,"elapsed_seconds":21.97,"tests":"168 passed","exit_code":0}
+  ],
+  "excluded_setup_attempt": "An initial P072/P073 workspace accidentally nested the project one directory deeper than the requested cwd. It was discarded and not included; the valid repetitions ran from the project root.",
+  "limitations": [
+    "Only two task sizes and one simple slugification task family; repeated runs were order-sensitive.",
+    "No per-run USD cost was available on subscription billing.",
+    "Pilot 074 verified current continue:false/stopReason hook behavior and recall but is not an efficacy sample.",
+    "Earlier token pilots used the documented legacy PostToolUse decision:block replacement; the current code uses continue:false with stopReason."
+  ]
+}

@@ -14,6 +14,17 @@ Jev 是 TypeSafe AI 的决策模型。本仓库默认提供的是面向编码任
 
 实际节省需用相同任务做对照，记录端到端输入/输出 token、工具调用、耗时和任务成功率。最新评测版在 key-file 功能任务反序配对中分别少用 52.1%、22.9%；但在全 pinned 代码修复反序配对中分别多用 20.3%、27.8%。各有效配对的全套测试和目标 Ruff 均通过。结果支持该检索规则适用于某类多文件功能任务，但不能证明跨任务稳定减半；完整数据、限制和后续目标见[调研依据和限制](efficiency-research.md)。
 
+另有一个可选的 Codex 专用大输出 hook：它把较长 Bash 输出暂存到本机，用预览替代完整结果，并提供按行/关键词取回的方法。四组顺序平衡配对合计节省 9.5% token；大输出任务为 14.8%，但反序样本从 20.6% 降到 6.3%，目前不能称为稳定收益。它不需要 TypeSafe/API，且不适用于 Claude、Kimi 或 ZCode；详情见[研究记录](efficiency-research.md)。
+
+从 GitHub 安装 Codex 插件：
+
+```sh
+codex plugin marketplace add uninhibited-scholar/jev-universal --ref main --sparse .agents/plugins --sparse jev-universal
+codex plugin add jev-universal@jev-universal
+```
+
+安装后在 Codex 中打开 `/hooks`，先检查并信任该 hook。只复制 Skill 的其它客户端不会启用这个 Codex 专用自动钩子。
+
 ## 可选：TypeSafe API 适配器
 
 仓库另保留 MCP 适配器，供已有 TypeSafe API 权限的人使用。使用本 Skill 不依赖该适配器。见[适配器配置](../README.md)。
