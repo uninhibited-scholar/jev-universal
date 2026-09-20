@@ -1,6 +1,6 @@
 # Existing efficiency practices and this Skill's design
 
-This is a design review, not a benchmark of this repository's Skill. Community examples are useful for discovering operational tactics, but individual savings figures are not treated as independently verified results.
+This document combines a design review with local pilot benchmark results. Community examples are useful for discovering operational tactics, but individual savings figures are not treated as independently verified results.
 
 ## Patterns worth keeping
 
@@ -83,3 +83,60 @@ To check order sensitivity, we repeated the seeded issuer-regression task with t
 | Auth tests | 8/8 | 8/8 | tied |
 
 The compact Skill reduced output and time in this repeat, but not input tokens, total tool calls, or reported cost. Compared with pilot 002 on the same task, the one-run input result changed from −14.0% with the longer Skill to +2.0% with the compact Skill. Baseline input itself varied from 93,865 to 115,716. This confirms that one run is noisy and that we cannot infer a stable total-token saving from the current evidence. The compact version costs less prompt overhead and remains the candidate for further counterbalanced trials.
+
+## Local pilot 005
+
+We changed the compact Skill to explicitly avoid whole-repository inventories when the request already names a subsystem. On the seeded issuer-validation regression, the baseline ran first and the Skill second. Both fixes passed all 8 auth tests when run independently.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Total input tokens | 137,500 | 72,675 | −47.1% |
+| Output tokens | 2,429 | 1,616 | −33.5% |
+| Input + output tokens | 139,929 | 74,291 | −46.9% |
+| Tool calls | 9 | 6 | −33.3% |
+| Wall time | 64.5 s | 44.3 s | −31.4% |
+| Reported cost | $0.1428 | $0.1037 | −27.4% |
+| Auth tests | 8/8 | 8/8 | tied |
+
+The baseline first listed the repository, read three files, edited implementation and tests, then ran pytest twice. The Skill searched the named auth area, edited the fix, and ran the existing auth suite once; it recognized that an existing invalid-issuer case already tested the core invariant. This is the clearest evidence so far for avoiding redundant discovery and tests, though it is one task/run.
+
+## Local pilot 006
+
+We repeated the same issuer regression with the same compact Skill, but ran Skill first and baseline second. Both patches were independently verified; baseline had 9 auth tests and Skill had 8 because they added different regression coverage (a direct verifier test versus an HTTP-path assertion).
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Total input tokens | 112,171 | 89,246 | −20.4% |
+| Output tokens | 2,131 | 1,849 | −13.2% |
+| Input + output tokens | 114,302 | 91,095 | −20.3% |
+| Tool calls | 8 | 7 | −12.5% |
+| Wall time | 50.5 s | 45.1 s | −10.5% |
+| Reported cost | $0.1214 | $0.0991 | −18.4% |
+| Auth tests | 9/9 | 8/8 | all passed |
+
+This reversed-order repeat also favored the Skill, with smaller savings. It does not meet the 2x target.
+
+## Local pilot 007
+
+On a second task type, both agents updated `TYPESAFE_API_KEY_FILE` to accept `~/` without expanding `$VAR`, added regression tests, and documented the behavior. Skill ran first. An independent identical run of `tests/test_core.py` and `tests/test_cli.py` passed all 29 tests in both copies; this gave both arms the same correctness gate even though their in-agent test selections differed.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Total input tokens | 202,783 | 151,309 | −25.4% |
+| Output tokens | 3,807 | 2,788 | −26.8% |
+| Input + output tokens | 206,590 | 154,097 | −25.4% |
+| Tool calls | 13 | 12 | −7.7% |
+| Wall time | 78.8 s | 59.5 s | −24.5% |
+| Reported cost | $0.2063 | $0.1347 | −34.7% |
+| Acceptance tests | 29/29 | 29/29 | tied |
+
+### Current checkpoint
+
+Across pilots 005–007, pooled input-plus-output usage fell from 460,821 to 319,483 tokens (−30.7%, about 1.44x fewer) and pooled wall time fell about 23%. Reported cost fell about 28%. This is promising but exploratory: only two distinct task types are represented, with the authentication case repeated; the sample is too small to establish reliability or generalize to other models/repositories. Earlier pilots with the longer Skill showed mixed or adverse results. Keep the goal active and add further task types and repetitions before asserting stable savings. The 2x target remains unmet; 10x has no supporting evidence.
+
+
+## Reproducibility checkpoint (2026-09-20)
+
+We reran the same acceptance command outside the agent approval layer for both pilot 007 fixture copies: `uv run --no-editable pytest tests/test_cli.py tests/test_core.py -q`. Baseline and Skill each passed 29/29 tests. The original agent test commands had been blocked by approval, so this independent rerun closes that verification gap for pilot 007.
+
+The seven pilots are stored as local JSONL traces under the ignored `.local/efficiency/` directory because they contain private prompts and local paths; only sanitized aggregate metrics are published here. New model-driven pairs are temporarily paused: the authenticated Claude Code CLI reported 98% utilization of its seven-day usage window at the last recorded check. No additional generation was started after that point. This is an account-capacity constraint, not a Skill evaluation result. The goal remains open; resume with a new task type and swapped run order when an authorized evaluation budget is available.
