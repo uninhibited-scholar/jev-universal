@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "pilot_series": ["075", "076", "077"],
+  "pilot_series": ["075", "076", "077", "078"],
   "date": "2026-09-21",
   "model": "gpt-5.5",
   "source_commit": "1c69edfe8bfe7678b212883edf3ac1f83c984817",
@@ -8,6 +8,7 @@
   "p075_prior_skill_sha256": "97cda5202a6ab310eb9561ebad8a0db85d8fc18a65c729464c88f3dbeb42b259",
   "p075_candidate_skill_sha256": "16e87b136adf386762f7deb883ca9e3dcb62ce72f63e42a3e847d3291a15f84f",
   "p077_compact_skill_sha256": "2cb2b722e081dc5bd8e97180c2629962f1ecd39e713d2d52da962e3b48aeb99a",
+  "p078_source_commit": "d92e640e1a0127d0d5b01427947d2650129e0e94",
   "cost_usd": null,
   "billing_note": "Codex CLI subscription traces do not expose per-run USD cost.",
   "environment": "Python 3.13 locked local environment; full suite and targeted Ruff independently rerun outside the nested Codex sandbox.",
@@ -263,6 +264,98 @@
       "Per-pair token reductions varied from 5.2% to 22.9%; the second pair was slower with the Skill.",
       "Codex nested sandbox denied the unchanged localhost HTTP test in every run; all full suites passed when independently rerun in the common outer environment.",
       "I001 was pre-existing and excluded from targeted Ruff checks.",
+      "Subscription billing does not expose per-run USD cost."
+    ]
+  },
+  "follow_up_078_second_development_task": {
+    "source_commit": "d92e640e1a0127d0d5b01427947d2650129e0e94",
+    "task": "Add --context N search snippets to the output recall CLI; preserve existing behavior, add tests, and update usage documentation.",
+    "model": "gpt-5.5",
+    "skill_sha256": "2cb2b722e081dc5bd8e97180c2629962f1ecd39e713d2d52da962e3b48aeb99a",
+    "candidate_baseline_condition": "No-Skill workspaces had no project .agents/skills/jev-dev-efficient/SKILL.md; treatment workspaces contained the compact Skill, read at task start.",
+    "changed_files": [
+      "jev-universal/scripts/jev_output_recall.py",
+      "jev-universal/tests/test_output_compaction.py",
+      "jev-universal/README.md"
+    ],
+    "existing_tests": "All nine existing test functions remained AST-equivalent; each arm added three focused tests.",
+    "runs": [
+      {
+        "pair": "078-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 495814,
+        "cached_input_tokens_subset": 456704,
+        "output_tokens": 6379,
+        "total_tokens": 502193,
+        "tool_actions": 30,
+        "elapsed_seconds": 148.089,
+        "independent_focused_tests": "12 passed",
+        "targeted_ruff": "passed"
+      },
+      {
+        "pair": "078-A",
+        "order": 2,
+        "arm": "compact_skill",
+        "skill_loaded": true,
+        "input_tokens": 504477,
+        "cached_input_tokens_subset": 469120,
+        "output_tokens": 6473,
+        "total_tokens": 510950,
+        "tool_actions": 35,
+        "elapsed_seconds": 157.497,
+        "independent_focused_tests": "12 passed",
+        "targeted_ruff": "passed"
+      },
+      {
+        "pair": "078-B",
+        "order": 1,
+        "arm": "compact_skill",
+        "skill_loaded": true,
+        "input_tokens": 592688,
+        "cached_input_tokens_subset": 551040,
+        "output_tokens": 7316,
+        "total_tokens": 600004,
+        "tool_actions": 31,
+        "elapsed_seconds": 175.334,
+        "independent_focused_tests": "12 passed",
+        "targeted_ruff": "passed"
+      },
+      {
+        "pair": "078-B",
+        "order": 2,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 549524,
+        "cached_input_tokens_subset": 508416,
+        "output_tokens": 7922,
+        "total_tokens": 557446,
+        "tool_actions": 33,
+        "elapsed_seconds": 181.624,
+        "independent_focused_tests": "12 passed; 3 subtests passed",
+        "targeted_ruff": "passed"
+      }
+    ],
+    "aggregate": {
+      "baseline_input_tokens": 1045338,
+      "compact_skill_input_tokens": 1097165,
+      "baseline_output_tokens": 14301,
+      "compact_skill_output_tokens": 13789,
+      "baseline_total_tokens": 1059639,
+      "compact_skill_total_tokens": 1110954,
+      "compact_skill_token_change_percent": 4.8,
+      "baseline_cached_input_tokens_subset": 965120,
+      "compact_skill_cached_input_tokens_subset": 1020160,
+      "baseline_tool_actions": 63,
+      "compact_skill_tool_actions": 66,
+      "baseline_elapsed_seconds": 329.713,
+      "compact_skill_elapsed_seconds": 332.831,
+      "usd_cost": null
+    },
+    "limitations": [
+      "Single development task family; this is not a general efficacy estimate.",
+      "Both pairs used more total tokens with the Skill; tool-action and elapsed-time direction varied by order.",
       "Subscription billing does not expose per-run USD cost."
     ]
   }
