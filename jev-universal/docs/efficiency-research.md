@@ -4,7 +4,7 @@ This document combines a design review with local pilot benchmark results. Commu
 
 ## Current evaluation checkpoint (2026-09-21)
 
-The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. No valid repeated task type has demonstrated stable savings. Four earlier from-start Skill pairs used 0.7–19.2% more total tokens. Two newer compact candidates on the same Zed task used 39.0% and 43.8% more. RTK hook pilot 032 cut command-output bytes by 31.9% but used 11.7% more total tokens; its tiny warning-bearing test pilot hid a warning. Pluck Skill pilots 034–035 failed retrieval/coverage gates. Pilot 038 used 33.3% fewer tokens, while revision-changed 039 used 6.5% more. On the key-file task, revision-C pair 040 saved 28.3% as the candidate ran second, but reverse pair 043 used 12.0% more. Batching revision-D pair 044 showed −39.3% when candidate ran first but introduced a lint failure; reverse 045 used 13.9% more and repurposed an existing test. The clean, calibrated revision-E pair 046 saved 18.3% with candidate second, but reverse pair 047 used 19.6% more. Both 046–047 preserved tests and passed full tests/lint, yet savings reversed with order. No revision meets repeatability and quality gates. Do not pool across Skill revisions or treat one favorable pair as proof. USD cost was unavailable on subscription billing. See pilots 022–047 below.
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. P050–051 are the first order-balanced, quality-valid repeat for one task and one Skill revision: they saved 21.8% and 46.1%. This is promising but not yet generalizable across task types, and neither run reached 50% savings. Earlier evidence remains mixed: from-start pairs often used more tokens; RTK and Pluck pilots did not pass the efficacy gate; and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
 
 An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
 
@@ -663,3 +663,23 @@ These used the same key-file change task, `gpt-5.5`, clean Git snapshot, and Ski
 | 047 | candidate → baseline | 436,783 | 522,575 | +19.6% | 20 → 27 (+35.0%) | 118.356 → 133.064 s (+12.4%) |
 
 Cached input was 260,608/205,568 baseline/candidate in 046 and 404,224/483,456 in 047; output tokens were 3,036/3,421 and 4,327/5,079. Aggregate shell output fell 1.6% in 046 and rose 30.7% in 047. USD cost was unavailable. Even with setup paths fixed in the shared prompt and no test/lint regression, total-token results reversed under order balance. Revision E has not demonstrated stable savings.
+
+## Local pilots 048–049: targeted lookup rules
+
+P048–049 continued the calibrated key-file task while tightening known-symbol search behavior. The candidate saved 18.3% in P046 but used 19.6% more in P047; new instructions did not make this pair stable. In P048, candidate used 7.0% more tokens despite fewer actions, and broader command output grew 32.3%. In P049, candidate used 110.6% more tokens and took 70.3% longer, with both arms still passing 39 tests and Ruff. Traces showed that an exact symbol lookup was followed by broad searches and extra documentation work. These valid-quality pairs do not establish savings.
+
+| Pair | Candidate order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 048 | second | 356,699 | 381,812 | +7.0% | 20 → 16 | 87.124 → 100.600 s (+15.5%) |
+| 049 | first | 255,182 | 537,368 | +110.6% | 14 → 29 | 81.486 → 138.751 s (+70.3%) |
+
+## Local pilots 050–051: batched cross-file edits
+
+These used the same key-file task, clean source snapshot, model, prompt, and Skill revision H; the order was reversed in P051. Both candidate arms preserved original test cases, added coverage, passed the independently checked 39-test suite and Ruff. Candidate grouped related edits into two file-change events versus six for baseline. The repeated savings and runtime reductions are encouraging for this task, but aggregate shell output was higher in P050, the task was only one narrow configuration/documentation change, and no independent task type has confirmed the effect. Keep the goal open.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 050 | baseline → candidate | 441,541 | 344,980 | −21.8% | 23 → 18 | 116.451 → 104.072 s (−10.7%) |
+| 051 | candidate → baseline | 442,593 | 238,612 | −46.1% | 17 → 14 | 102.107 → 90.372 s (−11.5%) |
+
+Cached input/output were 410,368/3,960 baseline and 311,168/4,270 candidate in P050; 407,936/3,587 baseline and 209,664/3,542 candidate in P051. Shell output bytes changed +48.4% in P050 and −18.0% in P051. Subscription billing did not provide per-run USD cost. P050 and P051 are not evidence for a 2x result or for other development task classes.
