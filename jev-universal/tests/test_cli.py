@@ -84,4 +84,5 @@ def test_env_file_secret_not_in_config(tmp_path):
     )
     assert result.returncode == 0
     assert "never-echo-this" not in result.stdout + result.stderr
-    assert str(secret) in result.stdout
+    config = json.loads(result.stdout)
+    assert config["mcpServers"]["jev-universal"]["args"][-1] == str(secret.resolve())
