@@ -5,7 +5,6 @@ import sys
 import tomllib
 
 import pytest
-
 from jev_universal.cli import client_config
 from jev_universal.core import api_key
 
