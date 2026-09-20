@@ -1,8 +1,13 @@
 import stat
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PLUGIN_ROOT))
+
+# ruff: noqa: E402 — the hook package is intentionally loaded from the plugin root.
 from hooks.post_tool_use import process_event, should_compact
 from scripts.jev_output_recall import select_lines
 from scripts.jev_output_store import (
