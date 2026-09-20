@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "pilot_series": ["075", "076"],
+  "date": "2026-09-21",
+  "model": "gpt-5.5",
+  "source_commit": "1c69edfe8bfe7678b212883edf3ac1f83c984817",
+  "task_family": "cross-file Zed MCP configuration feature",
+  "p075_prior_skill_sha256": "97cda5202a6ab310eb9561ebad8a0db85d8fc18a65c729464c88f3dbeb42b259",
+  "p075_candidate_skill_sha256": "16e87b136adf386762f7deb883ca9e3dcb62ce72f63e42a3e847d3291a15f84f",
+  "cost_usd": null,
+  "billing_note": "Codex CLI subscription traces do not expose per-run USD cost.",
+  "environment": "Python 3.13 locked local environment; full suite and targeted Ruff independently rerun outside the nested Codex sandbox.",
+  "runs": [
+    {
+      "pair": "075-A",
+      "prompt": "original acceptance wording",
+      "order": 1,
+      "arm": "prior_skill",
+      "skill_loaded": true,
+      "input_tokens": 291124,
+      "cached_input_tokens_subset": 266112,
+      "output_tokens": 4200,
+      "total_tokens": 295324,
+      "tool_actions": 22,
+      "elapsed_seconds": 97.837,
+      "full_suite": "39 passed",
+      "targeted_ruff_ignore_I001": "passed"
+    },
+    {
+      "pair": "075-A",
+      "prompt": "original acceptance wording",
+      "order": 2,
+      "arm": "updated_skill_candidate",
+      "skill_loaded": true,
+      "input_tokens": 271759,
+      "cached_input_tokens_subset": 243456,
+      "output_tokens": 3912,
+      "total_tokens": 275671,
+      "tool_actions": 15,
+      "elapsed_seconds": 90.388,
+      "full_suite": "40 passed",
+      "targeted_ruff_ignore_I001": "passed"
+    },
+    {
+      "pair": "075-C",
+      "prompt": "strict file-scope and test-preservation wording",
+      "order": 1,
+      "arm": "updated_skill_candidate",
+      "skill_loaded": true,
+      "input_tokens": 296058,
+      "cached_input_tokens_subset": 272256,
+      "output_tokens": 3816,
+      "total_tokens": 299874,
+      "tool_actions": 17,
+      "elapsed_seconds": 90.248,
+      "full_suite": "40 passed",
+      "targeted_ruff_ignore_I001": "passed"
+    },
+    {
+      "pair": "075-C",
+      "prompt": "strict file-scope and test-preservation wording",
+      "order": 2,
+      "arm": "prior_skill",
+      "skill_loaded": true,
+      "input_tokens": 314655,
+      "cached_input_tokens_subset": 288256,
+      "output_tokens": 4167,
+      "total_tokens": 318822,
+      "tool_actions": 18,
+      "elapsed_seconds": 93.816,
+      "full_suite": "41 passed",
+      "targeted_ruff_ignore_I001": "passed"
+    }
+  ],
+  "excluded": [
+    {
+      "pair": "075-B",
+      "reason": "The baseline changed an unrelated HTTP test to skip socket-bind denial; treatment behavior and validation were no longer comparable. Excluded from efficacy results."
+    }
+  ],
+  "limitations": [
+    "Trace audit found that the baseline project snapshot contained an older compact Skill and Codex read it. These are version-comparison results, not no-Skill baseline efficacy estimates.",
+    "P075 contains two valid order-balanced repeats but compares Skill revisions, not Skill against a no-Skill baseline.",
+    "The valid pairs used different prompt constraint detail; report their effects separately and do not interpret their descriptive pool as a prompt-controlled estimate.",
+    "Per-run USD cost is unavailable.",
+    "I001 was pre-existing in the frozen starting test file and was excluded from targeted Ruff checks; other rules were checked."
+  ],
+  "follow_up_076_no_skill_comparison": {
+    "source_commit": "1c69edfe8bfe7678b212883edf3ac1f83c984817",
+    "skill_sha256": "4e69f69241d6a67661a3feb49705d8fd21504443e1cfbcff7154aeb4b834c5c1",
+    "prompt": "Same strict file-scope and test-preservation prompt in all runs.",
+    "candidate_baseline_condition": "Baseline snapshots have no .agents/skills/jev-dev-efficient/SKILL.md; treatment snapshots contain the exact published Skill file.",
+    "runs": [
+      {
+        "pair": "076-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 317498,
+        "cached_input_tokens_subset": 288640,
+        "output_tokens": 4557,
+        "total_tokens": 322055,
+        "tool_actions": 23,
+        "elapsed_seconds": 105.140,
+        "agent_sandbox_full_suite": "39 passed, 1 failed on socket permission",
+        "independent_full_suite": "40 passed",
+        "targeted_ruff_ignore_I001": "passed"
+      },
+      {
+        "pair": "076-A",
+        "order": 2,
+        "arm": "published_skill",
+        "skill_loaded": true,
+        "input_tokens": 304724,
+        "cached_input_tokens_subset": 279424,
+        "output_tokens": 3951,
+        "total_tokens": 308675,
+        "tool_actions": 19,
+        "elapsed_seconds": 92.349,
+        "agent_sandbox_full_suite": "39 passed, 1 failed on socket permission",
+        "independent_full_suite": "40 passed",
+        "targeted_ruff_ignore_I001": "passed"
+      },
+      {
+        "pair": "076-B",
+        "order": 1,
+        "arm": "published_skill",
+        "skill_loaded": true,
+        "input_tokens": 288380,
+        "cached_input_tokens_subset": 263680,
+        "output_tokens": 4570,
+        "total_tokens": 292950,
+        "tool_actions": 20,
+        "elapsed_seconds": 105.516,
+        "agent_sandbox_full_suite": "39 passed, 1 failed on socket permission",
+        "independent_full_suite": "40 passed",
+        "targeted_ruff_ignore_I001": "passed"
+      },
+      {
+        "pair": "076-B",
+        "order": 2,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 273693,
+        "cached_input_tokens_subset": 248960,
+        "output_tokens": 3839,
+        "total_tokens": 277532,
+        "tool_actions": 17,
+        "elapsed_seconds": 90.653,
+        "agent_sandbox_full_suite": "39 passed, 1 failed on socket permission",
+        "independent_full_suite": "40 passed",
+        "targeted_ruff_ignore_I001": "passed"
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 599587,
+      "skill_total_tokens": 601625,
+      "skill_token_change_percent": 0.34,
+      "baseline_tool_actions": 40,
+      "skill_tool_actions": 39,
+      "baseline_elapsed_seconds": 195.793,
+      "skill_elapsed_seconds": 197.865,
+      "baseline_independent_tests": "80 passed across both repeats",
+      "skill_independent_tests": "80 passed across both repeats",
+      "usd_cost": null
+    },
+    "limitations": [
+      "Only one task family was evaluated.",
+      "Codex nested sandbox denied the unchanged localhost HTTP test in every run; all full suites passed when independently rerun in the common outer environment.",
+      "I001 was pre-existing and excluded from targeted Ruff checks.",
+      "Subscription billing does not expose per-run USD cost."
+    ]
+  }
+}

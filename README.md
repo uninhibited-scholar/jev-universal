@@ -18,17 +18,19 @@ directory supported by your AI client, then start a new conversation. Or copy
 the `SKILL.md` instructions into the assistant's project/user instructions.
 No API key or login is needed.
 
-Use it selectively for unfamiliar failures spanning components, noisy command
-output, or repeated diagnosis. Skip it for localized changes with known source
-and acceptance checks. No tested version has shown reliable token savings. On
-the repeated Zed feature task, two compact candidate versions used 39.0% and
-43.8% more total tokens; one earlier cross-layer bug pair used 0.7% more. See
-the [pilot and research notes](jev-universal/docs/efficiency-research.md) for
-the full evidence and limits.
+Use it selectively for unfamiliar multi-file features, bugs, or debugging
+tasks, especially when the relevant implementation is not yet clear. Skip it
+for localized changes with known source and acceptance checks. In the clean
+no-Skill comparison on a cross-file Zed config task, one order used 4.2% fewer
+tokens with the Skill and the reversed order used 5.6% more; pooled, the Skill
+used 0.3% more. This does not show reliable token savings. Results from other
+task types also vary. No stable multi-fold savings are established; the 2x
+target remains unmet. See the [pilot and research notes](jev-universal/docs/efficiency-research.md)
+for the full evidence and limits.
 
 The target remains at least 2x fewer total tokens, with 10x as a stretch goal.
-Neither has been demonstrated. The Skill is an experimental workflow prompt,
-not a proven efficiency improvement; evaluation continues.
+Neither target has been demonstrated. The Skill is an experimental workflow
+prompt, not a proven general efficiency improvement; evaluation continues.
 
 ## Optional: Codex large-output hook
 
