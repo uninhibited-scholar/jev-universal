@@ -384,6 +384,25 @@ The Skill implementation preserved existing Chinese setup instructions for Claud
 
 This feature pair improved elapsed time and tool actions but used 2.5% more total tokens. The Skill's documentation-preservation behavior avoided a baseline regression, but the paired result still does not demonstrate a token saving.
 
-## Current checkpoint after pilot 018
+## Local pilot 019: counterbalanced repeat of Zed client-config feature
 
-The broadened Skill was invoked on a real cross-file feature task and preserved adjacent client guidance, but it used 2.5% more tokens than baseline. The same-type response-validation repeats pooled to 2.5% fewer tokens, and other recent tasks remain mixed. Faster elapsed time and fewer tool actions are recurring signals, but task success and token efficiency must be reported separately; the target of at least 2x token reduction remains unproven. Continue with representative development tasks, repeated counterbalanced pairs, exact usage telemetry, and no-regression gates.
+We repeated pilot 018 from the same source commit and with the same prompt, this time running baseline first and Skill second. The Skill body was present in the treatment trace. Both variants produced the requested Zed `context_servers` schema; independent common verification passed the identical full 40-test suite in both copies. The two changed-file Ruff checks reported the same existing unsorted-import finding in `tests/test_cli.py`, so neither arm receives a lint pass. No service or API key was used. Per-run USD cost was unavailable.
+
+The Skill edit regressed adjacent English setup documentation: it removed the general instruction to merge only the new entry and keep existing servers/settings. The baseline retained that guidance. This is a no-regression failure even though both implementations passed tests. The Skill also used more tokens and the action count tied.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 453,828 | 489,162 | +7.8% |
+| Cached input (subset of input) | 402,048 | 435,200 | +8.2% |
+| Output tokens | 5,052 | 5,220 | +3.3% |
+| Input + output tokens | 458,880 | 494,382 | +7.7% |
+| Tool actions (commands + file changes) | 28 | 28 | tied |
+| Model turns | 1 | 1 | tied |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical full test suite | 40/40 | 40/40 | tied |
+
+Across the two order-reversed repetitions of this feature task, baseline used 1,084,926 total tokens and Skill used 1,136,036, or 4.7% more for Skill. Pilot 018 had fewer Skill tool actions and elapsed time, but this repeat ties actions; elapsed time was not retained for pilot 019. The paired evidence is mixed on process signals and negative on pooled tokens. We added a specific adjacent-documentation preservation check to the Skill; that revision requires a fresh evaluation before drawing conclusions.
+
+## Current checkpoint after pilot 019
+
+Across five recent matched pairs, the Skill's token results remain inconsistent: one saved 26.7%, one used 9.7% more, the counterbalanced repeat saved 14.6%, and the two repetitions of a Zed feature task used 2.5% and 7.7% more. The probability-mass pair pools to only 2.5% fewer tokens; the Zed feature pair pools to 4.7% more. Tests have passed on common gates, but the Skill has also caused documented compatibility/documentation regressions in earlier pilots. There is no evidence of stable savings, much less 2x. The latest preservation-rule revision is a new candidate and must be tested. Continue representative counterbalanced pairs, exact usage telemetry, and no-regression gates.
