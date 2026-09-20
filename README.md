@@ -20,12 +20,11 @@ No API key or login is needed.
 
 Use it selectively for unfamiliar failures spanning components, noisy command
 output, or repeated diagnosis. Skip it for localized changes with known source
-and acceptance checks. Latest controlled runs do not show a token saving: three
-Zed feature pairs used 6.3%, 7.6%, and 19.2% more total tokens with the Skill;
-one cross-layer bug pair used 0.7% more, while reducing tool actions by 10.7%
-and wall time by 6.5%. Earlier positive results include regressions and invalid
-or late Skill loading. See the [pilot and research notes](jev-universal/docs/efficiency-research.md)
-for the full evidence and limits.
+and acceptance checks. No tested version has shown reliable token savings. On
+the repeated Zed feature task, two compact candidate versions used 39.0% and
+43.8% more total tokens; one earlier cross-layer bug pair used 0.7% more. See
+the [pilot and research notes](jev-universal/docs/efficiency-research.md) for
+the full evidence and limits.
 
 The target remains at least 2x fewer total tokens, with 10x as a stretch goal.
 Neither has been demonstrated. The Skill is an experimental workflow prompt,

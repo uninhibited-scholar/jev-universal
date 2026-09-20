@@ -4,11 +4,11 @@ This document combines a design review with local pilot benchmark results. Commu
 
 ## Current evaluation checkpoint (2026-09-20)
 
-The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. No valid repeated task type has demonstrated this. In four recent pairs where the Skill was deliberately placed in the supported project location and requested from the first step, three Zed feature runs used 6.3%, 7.6%, and 19.2% more total tokens; one different cross-layer bug task used 0.7% more. That bug run did reduce tool actions by 10.7% and wall time by 6.5%, suggesting fewer actions do not necessarily mean fewer tokens. USD cost was unavailable on subscription billing. See pilots 022–025 below.
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. No valid repeated task type has demonstrated this. Four earlier from-start Skill pairs used 0.7–19.2% more total tokens. Two newer compact candidates on the same Zed task used 39.0% and 43.8% more, with 5–37% more tool actions but 4–5% less wall time. The newest versions must not be pooled with earlier ones; all show that faster or fewer-output runs can still consume more total tokens. USD cost was unavailable on subscription billing. See pilots 022–028 below.
 
 An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
 
-Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intended root and ran `rg --files` over the package, then attempted `uv` dependency downloads that the environment blocked. Targeted CLI tests passed, but full test collection failed because the system `mcp` package is incompatible with the repository. No treatment run was made, so this pilot contributes no efficacy estimate. The runner and environment setup must be fixed before another sample.
+Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intended root and ran `rg --files` over the package, then attempted `uv` dependency downloads that the environment blocked. Targeted CLI tests passed, but full test collection failed because the system `mcp` package is incompatible with the repository. No treatment run was made, so this pilot contributes no efficacy estimate. In pilots 027–028, the runner exposed the same preinstalled environment to both arms, and independent full-suite checks used it; treatment agents did not consistently select it. Token use did not improve. See below.
 
 ## Patterns worth keeping
 
@@ -16,6 +16,15 @@ Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intende
 - **Optimize the whole session:** avoid redundant reads, tool calls, and user round-trips; don't cut needed context if doing so risks a failed attempt. A [community token-efficiency skill](https://github.com/denfry/claude-skills/blob/main/skills/token-efficiency/SKILL.md) explicitly uses this total-cost framing and keeps detailed guidance/reference material separate from its tiny always-on contract.
 - **Progressive disclosure:** keep the trigger and core rules short; load examples or specialized procedures only when relevant. GitHub's [Copilot skills guidance](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) similarly recommends repository instructions for simple always-relevant rules and Skills for detailed task-specific instructions. The 2026 [SkillReducer preprint](https://arxiv.org/abs/2603.29919) reports that compressing skill descriptions and deferring non-core material reduced its sampled skill bodies while retaining or improving evaluated function; this is evidence about skills in that benchmark, not a result for this Skill.
 - **Small, purposeful validation:** verify changed behavior and acceptance criteria, but do not rerun unrelated checks without a reason. Keep successful output summarized and preserve actionable failure details.
+
+## Additional GitHub research: mechanisms with direct token pathways
+
+- **RTK (Rust Token Killer):** its documented hook rewrites supported shell commands and filters returned Bash output before it enters the model context. Its own savings guide is unusually clear about the boundary: “up to 90%” refers to shell-output bytes, not total session input, output, or bill; the absolute token estimate uses bytes/4. It documents Codex and Claude hooks and a Kimi instruction integration. This is the most concrete candidate for reducing development-session input without model/API credentials, but it is a separate local binary/hook and needs opt-in installation; it is not portable Skill behavior by itself. See [RTK README](https://github.com/rtk-ai/rtk/blob/develop/README.md), [Codex hook contract](https://github.com/rtk-ai/rtk/blob/develop/hooks/codex/README.md), and [savings boundaries](https://github.com/rtk-ai/rtk/blob/develop/docs/guide/resources/savings-explained.md).
+- **Vix virtual filesystem:** the project reports 20–50% fewer code-reading tokens by presenting Tree-sitter-minified source that removes whitespace while preserving syntax. This targets code payload, where a prompt cannot control all overhead; the claim is project-reported and its benchmark says it is observational, so it needs independent validation before adoption. See [Vix's VFS description](https://github.com/get-vix/vix#virtual-file-system).
+- **Forge:** its public small benchmark reports 7.5% lower weighted token units overall, but +2.9% on small tasks and +16.3% on medium tasks, with savings only on its large fixture (−23.7%). The practical signal is that workflow overhead is paid up front and pays off only when it avoids enough exploration; do not add phase ceremonies to short tasks. These are project-authored results, not an independent replication. See [Forge's benchmark](https://github.com/daanavcoding/forge#original-benchmark-briefly).
+- **Token-efficiency Skills:** examples such as [denfry/claude-skills](https://github.com/denfry/claude-skills/tree/main/skills/token-efficiency) consolidate reusable habits: answer-first prose, batch independent tool calls, targeted reads, no redundant rereads, and preserve correctness. Its deterministic reminder depends on Claude Code hooks; a model-invoked portable Skill can be ignored, as our own traces also demonstrate. These patterns are reasonable hypotheses, not measured savings by themselves.
+
+This evidence suggests the next high-value path is an optional deterministic output filter (RTK or an equivalent) plus a small fallback Skill for tools/hosts without hooks. Evaluate command-output reduction and complete session token usage separately; never infer total-session savings from filtered-output percentages.
 
 ## Jev-inspired decision structure
 
@@ -429,7 +438,7 @@ We repeated the same Zed feature task from the same source commit with the revis
 
 The revised rule prevented the documentation regression seen in pilot 019, but this is one corrected-quality repetition, not proof of a general quality improvement. It cost 3.8% more total tokens and 7.0% more time on this task. Across pilots 018–020, baseline totals 1,596,969 tokens and the respective Skill versions total 1,667,792 (+4.4%); because the Skill changed after pilot 019, this pooled figure is descriptive only, not an estimate for one fixed treatment.
 
-## Current checkpoint after pilot 020
+## Historical checkpoint after pilot 020 (superseded)
 
 The Skill still has no demonstrated stable token savings. Recent development-task pairs show +2.5%, +7.7%, then +3.8% token use for Skill; the revised documentation guard recovered the adjacent-doc quality regression but adds overhead and has only one post-change trial. Other tasks remain mixed, including two counterbalanced response-validation runs that pool to 2.5% fewer tokens. The minimum 2x target and 10x stretch target remain unmet by a wide margin. Continue with representative task pairs and counterbalanced order, but avoid adding broad workflow rules without evidence that their quality benefit justifies their measured overhead. Track usage, actions, elapsed time, and available cost; keep shared acceptance gates.
 
@@ -491,6 +500,34 @@ This different task seeded invalid upstream probability mass that could cause a 
 
 This is encouraging on actions and time, nearly tied on tokens, and far from a multi-fold token reduction.
 
-## Corrected checkpoint after pilots 022–026
+## Checkpoint after pilots 022–026 (superseded by 027–028)
 
 Valid explicit-load treatment pairs so far comprise three Zed feature trials and one cross-layer bug trial. They do not establish token savings, much less the 2x threshold. The Zed trials consistently used more tokens; the one different bug task nearly tied on tokens while using fewer actions and less time. Pilot 026 failed its runner/setup and has no treatment arm, so it is excluded. The next useful step is to repair the runner and dependency environment, then counterbalance multiple task types with the exact current Skill and no acceptance/test deletions. Do not pool across Skill revisions as if they were one treatment.
+
+## Local pilot 027: compact Skill candidate, Zed feature (baseline first)
+
+We shortened repeated workflow instructions and emphasized bounded retrieval, compact output, minimal additive edits, and stopping after one verification pass. Same Zed feature prompt and source snapshot; baseline ran first, then Skill. Both arms had a symlink to the same existing project venv, although the agents did not use it consistently during their own checks. Independent common verification later passed the same full 40/40 suite in both arms. The Skill rewrote the Chinese guide section and removed a Zed-specific assertion that the generated config never echoes a secret. This is a safety-test preservation failure. USD cost was unavailable.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 498,700 (437,632) | 695,770 (643,968) | — |
+| Output tokens | 5,909 | 5,769 | — |
+| Input + output tokens | 504,609 | 701,539 | +39.0% |
+| Tool actions | 38 | 40 | +5.3% |
+| Wall time | 163.790 s | 156.802 s | −4.3% |
+| Same baseline test suite against both implementations | 40/40 | 40/40 | tied |
+
+## Local pilot 028: environment and test-preservation rules, counterbalanced
+
+We strengthened the candidate with explicit instructions to retain existing tests and avoid implicit dependency installers; Skill ran first, baseline second. It still tried `uv` and multiple Python/test commands instead of using the shared venv. Both independently passed the same full 40/40 suite; changed-file Ruff checks reported the same pre-existing I001 import-order issue in each. The Skill retained the task's CLI and schema assertions, while its Chinese guide narrowed/reworked the local-client section. USD cost was unavailable.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 410,023 (371,712) | 591,558 (541,440) | — |
+| Output tokens | 5,095 | 5,550 | — |
+| Input + output tokens | 415,118 | 597,108 | +43.8% |
+| Tool actions | 27 | 37 | +37.0% |
+| Wall time | 145.003 s | 137.432 s | −5.2% |
+| Same baseline test suite against both implementations | 40/40 | 40/40 | tied |
+
+These are different Skill revisions, so don't pool them as one treatment. Both versions were faster in this particular task but materially more expensive in total tokens; 027 also failed safety-test preservation. The Skill instructions were visible in the treatment traces, but the tool trajectory did not reliably follow them. Further text-only instruction edits have diminishing credibility. Next experiments should isolate concrete mechanisms such as bounded shell output or a simpler deterministic runner, with the same commands/environment made explicit in both task arms. A tool-action reduction alone is not a token-saving result.
