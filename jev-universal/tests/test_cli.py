@@ -5,21 +5,83 @@ import sys
 import tomllib
 
 import pytest
+
 from jev_universal.cli import client_config
 from jev_universal.core import api_key
 
 
-@pytest.mark.parametrize("client", ["claude", "kimi", "zcode", "zcode-native", "codex"])
+@pytest.mark.parametrize("client", ["claude", "kimi", "zcode", "zcode-native", "codex", "zed"])
 def test_client_config_is_portable(client, tmp_path):
     config = client_config(client, tmp_path / "secret file.env")
     if client == "codex":
         entry = tomllib.loads(config)["mcp_servers"]["jev-universal"]
+    elif client == "zed":
+        entry = config["context_servers"]["jev-universal"]
     elif client == "zcode-native":
         entry = config["mcp"]["servers"]["jev-universal"]
     else:
         entry = config["mcpServers"]["jev-universal"]
     assert entry["command"] == sys.executable
     assert entry["args"][-1] == str(tmp_path / "secret file.env")
+
+
+def test_zed_config_schema_and_spaced_paths(monkeypatch, tmp_path):
+    python_path = tmp_path / "Python With Spaces" / "bin" / "python"
+    env_file = tmp_path / "Secrets With Spaces" / "private key.env"
+    monkeypatch.setattr(sys, "executable", str(python_path))
+
+    config = client_config("zed", env_file)
+
+    assert config == {
+        "context_servers": {
+            "jev-universal": {
+                "command": str(python_path),
+                "args": [
+                    "-m",
+                    "jev_universal.cli",
+                    "--env-file",
+                    str(env_file.resolve()),
+                ],
+                "env": {},
+            }
+        }
+    }
+
+
+def test_cli_accepts_zed_client(tmp_path):
+    secret = tmp_path / "private env file.env"
+    secret.write_text("TYPESAFE_API_KEY=never-echo-this\n")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "jev_universal.cli",
+            "--env-file",
+            str(secret),
+            "config",
+            "--client",
+            "zed",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "never-echo-this" not in result.stdout + result.stderr
+    assert json.loads(result.stdout) == {
+        "context_servers": {
+            "jev-universal": {
+                "command": sys.executable,
+                "args": [
+                    "-m",
+                    "jev_universal.cli",
+                    "--env-file",
+                    str(secret.resolve()),
+                ],
+                "env": {},
+            }
+        }
+    }
 
 
 def test_key_file(monkeypatch, tmp_path):

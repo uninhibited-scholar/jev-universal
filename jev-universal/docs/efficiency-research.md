@@ -363,3 +363,27 @@ The repeat favors the Skill on tokens, but pilot 016 on the same task type went 
 ## Current checkpoint after pilot 017
 
 Across three recent Skill invocations on two synthetic task types, results remain mixed: pilot 015 saved 26.7%, pilot 016 used 9.7% more tokens, and the counterbalanced pilot 017 repeat saved 14.6%. The two repeats of the response-validation task pool to only 2.5% fewer tokens, with nearly tied tool actions. All paired gates passed, but these small local trials do not establish a stable gain, and no result approaches the 2x target. Keep the Skill goal active and continue repeated pairs across representative development tasks. Codex subscription runs do not expose per-run USD cost.
+
+## Local pilot 018: Zed client-config feature
+
+This is the first feature-development pair after expanding the Skill trigger to include multi-file work with unfamiliar interface contracts. The task added a Zed-native `context_servers` output to the CLI, tests, and English/Chinese setup guides, using Zed's [official MCP configuration shape](https://zed.dev/docs/ai/mcp). The Skill ran first; its body was visible in the trace. The two implementations passed the same 39-test non-socket suite after normalizing the CLI test file, and the changed-file Ruff checks passed. The full test suite in the restricted agent environment was blocked by loopback socket permissions; the final integrated checkout subsequently passed all 40 tests outside that restriction.
+
+The Skill implementation preserved existing Chinese setup instructions for Claude, Kimi, ZCode, and Codex while adding Zed. Baseline replaced that multi-client section with Zed-only instructions, dropping existing guidance, though it also added a static `configs/zed.json` example. Both generated configurations used an empty `env` object and passed only the private env-file path in arguments; no API key or live service was used. The final public implementation uses the Skill group's preservation-friendly documentation and also includes the static Zed example as a separately reviewed addition.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 618,806 | 635,761 | +2.7% |
+| Cached input (subset of input) | 569,088 | 582,016 | +2.3% |
+| Output tokens | 7,240 | 5,893 | −18.6% |
+| Input + output tokens | 626,046 | 641,654 | +2.5% |
+| Tool actions (commands + file changes + web searches) | 36 | 29 | −19.4% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 170.496 s | 148.031 s | −13.2% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical non-socket suite | 39/39 | 39/39 | tied |
+
+This feature pair improved elapsed time and tool actions but used 2.5% more total tokens. The Skill's documentation-preservation behavior avoided a baseline regression, but the paired result still does not demonstrate a token saving.
+
+## Current checkpoint after pilot 018
+
+The broadened Skill was invoked on a real cross-file feature task and preserved adjacent client guidance, but it used 2.5% more tokens than baseline. The same-type response-validation repeats pooled to 2.5% fewer tokens, and other recent tasks remain mixed. Faster elapsed time and fewer tool actions are recurring signals, but task success and token efficiency must be reported separately; the target of at least 2x token reduction remains unproven. Continue with representative development tasks, repeated counterbalanced pairs, exact usage telemetry, and no-regression gates.

@@ -15,6 +15,8 @@ def client_config(client, env_file=None):
     if env_file:
         args += ["--env-file", str(Path(env_file).expanduser().resolve())]
     entry = {"command": sys.executable, "args": args}
+    if client == "zed":
+        return {"context_servers": {"jev-universal": {**entry, "env": {}}}}
     if client == "codex":
         return "\n".join(
             [
@@ -97,7 +99,9 @@ def main():
     sub = parser.add_subparsers(dest="command")
     config = sub.add_parser("config", help="Print config; never overwrite client settings")
     config.add_argument(
-        "--client", choices=["claude", "kimi", "zcode", "zcode-native", "codex"], required=True
+        "--client",
+        choices=["claude", "kimi", "zcode", "zcode-native", "codex", "zed"],
+        required=True,
     )
     doctor = sub.add_parser(
         "doctor", help="Check secret availability; --live makes one paid API call"

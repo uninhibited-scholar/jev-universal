@@ -26,11 +26,12 @@ existing returned claims field and failed an added compatibility check. Its revi
 repeat preserved behavior but used 79% more tokens. See the [pilot and research
 notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
 
-Three newer synthetic, cross-layer runs remain mixed: one pair saved 26.7% total
-tokens, the next used 9.7% more, and a counterbalanced repeat saved 14.6%. The two
-repeats of the same task pool to only 2.5% fewer tokens. All passed identical
-locally runnable correctness gates, but this does not establish a stable saving
-or approach the 2x target. The evaluation is ongoing.
+Four recent paired runs remain mixed: one saved 26.7% total tokens, another used
+9.7% more, a counterbalanced repeat saved 14.6%, and a Zed configuration feature
+used 2.5% more. The two repetitions of the same task pool to only 2.5% fewer
+tokens. Common test gates passed, though baseline dropped existing Chinese client
+guidance in the Zed task. This does not establish a stable saving or approach the
+2x target; evaluation continues.
 
 ## Optional: TypeSafe API adapter
 

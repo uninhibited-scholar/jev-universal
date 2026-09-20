@@ -42,9 +42,12 @@ uv run --no-editable jev-universal --env-file /absolute/path/private.env config 
 ```
 
 Supported formats: `claude`, `kimi`, `zcode` (generic JSON for import),
-`zcode-native` (`mcp.servers`), `codex` (TOML). The command prints configuration;
-it never changes your client settings. Merge the entry, then start a new session.
-It quotes paths correctly, including Windows and paths containing spaces.
+`zcode-native` (`mcp.servers`), `codex` (TOML), `zed` (`context_servers`).
+The command prints configuration; it never changes your client settings. Merge
+only the generated `jev-universal` entry into your existing settings object, then
+start a new session. Do not replace unrelated servers, profiles, or editor
+settings. It quotes paths correctly, including Windows and paths containing
+spaces.
 
 - Claude Code: project `.mcp.json`. Approve the project MCP server in the client.
   Claude Desktop uses its own MCP settings file; use the same generated JSON.
@@ -57,9 +60,15 @@ It quotes paths correctly, including Windows and paths containing spaces.
   `.zcode/config.json`. Choose GLM-5.3 in ZCode itself.
 - Codex: merge the generated TOML into the relevant MCP settings, or use the
   included `.codex-plugin/plugin.json` via a local plugin marketplace.
+- Zed: open Settings → AI → MCP Servers or run `zed: open settings file`. Merge
+  the generated `context_servers.jev-universal` object into the existing
+  `context_servers` object in `settings.json`. Keep any existing
+  `context_servers` entries; do not replace the full settings file.
 
 If `uvx` is not on a GUI app's PATH, use generated config: it points directly at
 an existing installed Python. Re-run config generation if the installation moves.
+Keep secrets in the private env file or `TYPESAFE_API_KEY_FILE`; the generated
+client config should contain only the env-file path, not the API key value.
 
 ## ChatGPT / HTTP
 

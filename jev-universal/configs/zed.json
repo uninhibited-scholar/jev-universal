@@ -1,0 +1,13 @@
+{
+  "context_servers": {
+    "jev-universal": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/uninhibited-scholar/jev-universal@v0.2.0#subdirectory=jev-universal",
+        "jev-universal"
+      ],
+      "env": {}
+    }
+  }
+}
