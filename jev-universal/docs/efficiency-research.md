@@ -139,7 +139,7 @@ Across pilots 005–007, pooled input-plus-output usage fell from 460,821 to 319
 
 We reran the same acceptance command outside the agent approval layer for both pilot 007 fixture copies: `uv run --no-editable pytest tests/test_cli.py tests/test_core.py -q`. Baseline and Skill each passed 29/29 tests. The original agent test commands had been blocked by approval, so this independent rerun closes that verification gap for pilot 007.
 
-The pilot traces are stored as local JSONL under the ignored `.local/efficiency/` directory because they contain private prompts and local paths; only sanitized aggregate metrics are published here. At this checkpoint, the authenticated Claude Code CLI reported 98% utilization of its seven-day window and we paused. Pilot 008 was later run as a single bounded pair when the CLI continued to allow requests; its trace then reported 99% utilization. After recording that pair, we stopped further paid model runs. This is an account-capacity constraint, not a Skill evaluation result. The goal remains open.
+The pilot traces are stored as local JSONL under the ignored `.local/efficiency/` directory because they contain private prompts and local paths; only sanitized aggregate metrics are published here. To reproduce a privacy-preserving summary from local Claude Code traces, run `python3 jev-universal/scripts/summarize_agent_trace.py <baseline.jsonl> <skill.jsonl>` or add `--model <slug>` for Codex CLI JSONL traces. The JSON output follows argument order and contains token breakdowns, per-model cost when the trace reports it, tool-action counts, turns, elapsed time when available, and status; it never prints prompt contents or source paths. Codex CLI does not expose per-run USD cost or elapsed time in its events. If only a final result JSON was saved without message events, tool-call counts are `null` rather than being misreported as zero. At this checkpoint, the authenticated Claude Code CLI reported 98% utilization of its seven-day window and we paused. Pilot 008 was later run as a single bounded pair when the CLI continued to allow requests; its trace then reported 99% utilization. After recording that pair, we stopped further Claude runs. We then used the separate Codex CLI subscription for one cross-model control, which does not expose per-run USD cost. This is an account-capacity constraint, not a Skill evaluation result. The goal remains open.
 
 
 ## Local pilot 008: forced-invocation applicability control
@@ -166,3 +166,28 @@ A separate CLI calibration used a $0.05 maximum-budget flag, but the smallest re
 ## Current checkpoint after pilot 008
 
 The positive pilots 005–007 remain exploratory and their pooled −30.7% token result is not stable evidence. Pilot 008 is deliberately excluded from the triggered-use estimate because the correct behavior under the Skill's own trigger is to skip it; as a forced-on control it worsened total tokens by 40.4% while both arms passed the same full suite. The candidate Skill was tightened to make the applicability gate explicit and to require each additional search to answer a specific unresolved question. This is a hypothesis for the next paired run, not a validated improvement. The goal remains active.
+
+
+## Local pilot 009: Codex automatic-discovery control
+
+We repeated pilot 008's same localized privacy task with Codex CLI 0.143.0 and `gpt-5.5`, but changed the treatment to place the candidate under project-level `.agents/skills/jev-dev-efficient/SKILL.md` and let Codex discover it normally. The baseline had no project Skill. Skill ran first, then baseline. This task explicitly names the subsystem, behavior, and acceptance checks, so the candidate description says it should not activate. The JSONL contains no explicit skill-load event or skill name; therefore this is a trigger/discovery control, not proof that the Skill body was used.
+
+The two agents made the same one-line implementation change to keep pinned chunks out of the evaluator state. Their initial agent-selected test files differed by one test. We copied the broader regression test file into both isolated fixtures and ran the exact same full test suite after both agent runs; each passed 39/39.
+
+| Measure | Baseline | Skill available | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 251,598 | 375,581 | +49.3% |
+| Cached input (subset of input) | 221,696 | 341,376 | +54.0% |
+| Output tokens | 3,474 | 3,912 | +12.6% |
+| Input + output tokens | 255,072 | 379,493 | +48.8% |
+| Tool actions (shell + file changes) | 23 | 24 | +4.3% |
+| Model turns | 1 | 1 | tied |
+| Wall time | not emitted/captured | not emitted/captured | unavailable |
+| Per-run USD cost | not exposed (subscription) | not exposed (subscription) | unavailable |
+| Full test suite | 39/39 | 39/39 | tied |
+
+The native Codex event reports `input_tokens` as the total input count and `cached_input_tokens` as a subset, so the cached figure is not added again. We did not capture a monotonic timer in this run. A separate run showed Codex CLI usage reporting was available, but this pair is too noisy and lacks invocation, elapsed-time, and dollar-cost telemetry to estimate Skill effectiveness. It is retained as a cross-model control only.
+
+## Checkpoint after Codex control
+
+Positive Claude pilots 005–007 remain a small, two-task-type sample at −30.7% pooled tokens. Forced Claude pilot 008 increased tokens by 40.4%. Codex pilot 009 did not provide an observable Skill-load event and increased measured tokens by 48.8%, so it cannot be attributed to the Skill body. The candidate applicability gate is still unvalidated in an in-scope, repeated Codex task. The 2x goal remains unmet; a proper follow-up must use a repository-scale diagnosis that matches the trigger, counterbalance order, and capture monotonic runtime as well as model usage.
