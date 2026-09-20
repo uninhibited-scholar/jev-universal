@@ -567,3 +567,20 @@ This isolated microtask paired the exact same two-test Git fixture, `gpt-5.5`, p
 RTK compressed the command output substantially, but this task saved only 26 total session tokens and took longer. More seriously, it removed the warning text and the agent reported “Warnings: none reported.” This is a concrete correctness regression, so the hook is not safe as a blanket test-output filter. The result is one deliberately tiny task pair, not a general efficacy estimate; repeat on representative development work only with warning preservation included as an acceptance criterion.
 
 Mitigation check: adding `[hooks]\nexclude_commands = ["pytest"]` to the isolated RTK config caused the Codex hook to leave `pytest -q tests` unchanged; the same test run then preserved the warning and the agent reported it correctly. In a direct hook protocol check, `git status --short` was still rewritten to `rtk git status --short`, while `uv run pytest -q tests` was excluded. Against the baseline row above, this safe-config run used 29,636 input (27,392 cached) plus 148 output tokens (29,784 total, +0.37%), took 11.257 s (+3.4%), and emitted the same 517 output bytes. This restores test-output fidelity but gives no saving on tests; any benefit from other filtered commands remains to be measured in a representative coding task. RTK documents `exclude_commands` in its [configuration guide](https://github.com/rtk-ai/rtk/blob/develop/docs/guide/getting-started/configuration.md).
+
+## Local pilot 032: Jev Skill plus RTK hook on Zed feature work
+
+This is a representative cross-file coding task: add Zed MCP config support, tests, and English/Chinese setup guidance. Both arms used Codex `gpt-5.5`, the same prompt, the Jev Skill from identical source commit `e371db4`, the same preinstalled Python environment, and `workspace-write`. To counterbalance the earlier baseline-first trials, RTK ran first and baseline second. The treatment installed only the project hook (no RTK awareness instructions) and used an isolated RTK config with `exclude_commands = ["pytest"]`; tests therefore ran raw and kept warnings. The trace shows six actual rewrites covering `rg` and Git status/diff commands. `sed` and Python/test commands were not rewritten.
+
+| Measure | RTK hook | Baseline | Change with RTK |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 697,057 (648,064) | 623,856 (555,776) | +11.7% |
+| Output tokens | 5,153 | 4,958 | +3.9% |
+| Input + output tokens | 702,210 | 628,814 | +11.7% |
+| Shell commands / file-change actions | 17 / 10 | 13 / 10 | +17.4% combined |
+| Aggregate shell output bytes | 39,033 | 41,485 | −5.9% |
+| Wall time | 147.794 s | 199.265 s | −25.8% |
+| Same common non-socket suite | 39/39 | 39/39 | tied |
+| USD cost | unavailable (subscription) | unavailable (subscription) | — |
+
+Both implementations passed the same 39-test common suite and the changed-file Ruff check. Each agent also reported 39 passed and one loopback-socket test failure in the full suite under this sandbox; that environmental failure was excluded from the common non-socket suite. The treatment's code and user-visible behavior were materially equivalent, with no test/security assertion loss found in the focused diff. The hook reduced aggregate command-output bytes modestly and finished faster, but used 11.7% more total session tokens and more actions. This single pair does not establish that the hook caused the extra exploration, but it does show that filtered output did not offset the observed session-token increase. RTK alone is therefore not an effective Jev Skill substitute or evidence for the 2x target; further runs must repeat on this task type and test a context-reducing method that also limits redundant searches.
