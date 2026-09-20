@@ -4,7 +4,7 @@ This document combines a design review with local pilot benchmark results. Commu
 
 ## Current evaluation checkpoint (2026-09-21)
 
-The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. The last evaluated revision (commit `48ad1e4`) saved 15.4% and 4.0% in an order-balanced all-pinned task pair and 26.3% in one key-file feature run, but the key-file order-reversed repeat P057 was invalidated by a dataless Python environment hanging during import. Its cross-task reliability and the 2x goal remain unproven. A stricter rule against rediscovering named files is now in the draft and still needs a matched evaluation. Earlier evidence remains mixed: RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. The evaluated revision `1f5ccaf` saved 52.1% and 22.9% in an order-balanced key-file feature pair, but used 20.3% and 27.8% more on a different all-pinned code task. One key-file run exceeded 50% savings; the reversed repeat did not. Thus the current evidence does not establish stable 2x savings across development task types. P057 was excluded after the old Python environment stalled on File Provider dataless files; later pairs used a fresh lockfile environment. Earlier evidence remains mixed: RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
 
 An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
 
@@ -715,9 +715,32 @@ P056–057 reused the same key-file expansion task and exact prompt as P050–05
 |---|---|---:|---:|---:|---:|---:|
 | 056 | candidate → baseline | 343,450 | 253,098 | −26.3% | 20 → 13 (−35.0%) | 91.239 → 84.059 s (−7.9%) |
 
-Cached input was 313,600/225,024 baseline/candidate; output tokens were 3,554/3,482. Both P056 arms passed all 42 tests and targeted Ruff. P057 candidate implemented the requested code and added tests, but its runner hung reading Python package files that macOS File Provider marked `dataless`; it never produced a usable test result or completed trace. Its partial data is not efficacy evidence. No per-run USD cost was available. Repeat the key-file task under a hydrated common environment before drawing a conclusion about the newer Skill across task types.
+Cached input was 313,600/225,024 baseline/candidate; output tokens were 3,554/3,482. Both P056 arms passed all 42 tests and targeted Ruff. P057 candidate implemented the requested code and added tests, but its runner hung reading Python package files that macOS File Provider marked `dataless`; it never produced a usable test result or completed trace. Its partial data is not efficacy evidence. P058–059 repeat the key-file task with the strict current rule and a fresh lockfile environment; results are below. No per-run USD cost was available.
 
 
 ### P057 environment incident
 
 The P057 candidate made the requested key-file code/test/documentation changes, but verification stalled while Python tried to read `pytest/__init__.py`, which File Provider reported as `isDownloaded=0` and marked `dataless`. Direct reads of the repository's `.git/config` also stalled after it became dataless. We stopped the run; no candidate completion, test result, candidate usage total or runtime was produced. Exclude P057 from efficacy calculations. This is a hydration failure in the local workspace environment, not a product test failure. Future runs must first verify that the shared virtualenv and Git metadata are hydrated, or use a pre-existing fully local environment without changing dependency versions.
+
+
+## Local pilots 058–059: strict known-path retrieval, key-file feature
+
+These repeated the key-file task with the same prompt, model (`gpt-5.5`), clean commit (`1f5ccaf`), and lockfile-derived environment; P058 ran the candidate first and P059 reversed order. The strict rule says to use named implementation/test/documentation paths directly and not enumerate directories. Candidate traces show one focused symbol lookup and direct reads of the named files, with no `rg --files` / `find` inventory. Both arms preserved prior tests, added two separate cases, documented the behavior in both languages, passed the 42-test full suite, and passed targeted Ruff. Codex's nested full-suite check could not bind a local socket, so the same tests were independently run in the common outer environment.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 058 | candidate → baseline | 263,116 | 126,039 | −52.1% | 19 → 10 (−47.4%) | 81.115 → 55.766 s (−31.3%) |
+| 059 | baseline → candidate | 238,166 | 183,725 | −22.9% | 15 → 12 (−20.0%) | 82.625 → 70.994 s (−14.1%) |
+
+Cached input was 239,104/106,752 baseline/candidate in P058 and 203,904/163,200 in P059; output tokens were 3,186/2,072 and 2,842/2,925. Direction remained positive after order reversal, though the repeated run saved less than half. USD cost was unavailable.
+
+## Local pilots 060–061: strict known-path retrieval, all-pinned behavior
+
+These tested the same revision and runner on the distinct all-pinned fast-path metadata fix, using a clean `1f5ccaf` snapshot, same prompt, model, environment and gates. P060 ran candidate first and P061 baseline first. Both candidates and baselines added a focused test; every full suite passed 41 tests and targeted Ruff passed. This is an intentional generalization check, not pooled with P058–059.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 060 | candidate → baseline | 299,187 | 359,837 | +20.3% | 19 → 21 (+10.5%) | 84.743 → 96.495 s (+13.9%) |
+| 061 | baseline → candidate | 166,004 | 212,154 | +27.8% | 15 → 12 (−20.0%) | 63.437 → 62.546 s (−1.4%) |
+
+Cached input was 274,688/325,632 baseline/candidate in P060 and 147,456/191,232 in P061; output tokens were 3,395/3,741 and 2,503/2,302. The candidate used more total tokens in both orders; this rule did not generalize to the all-pinned fix. USD cost was unavailable.
