@@ -2,6 +2,14 @@
 
 This document combines a design review with local pilot benchmark results. Community examples are useful for discovering operational tactics, but individual savings figures are not treated as independently verified results.
 
+## Current evaluation checkpoint (2026-09-20)
+
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. No valid repeated task type has demonstrated this. In four recent pairs where the Skill was deliberately placed in the supported project location and requested from the first step, three Zed feature runs used 6.3%, 7.6%, and 19.2% more total tokens; one different cross-layer bug task used 0.7% more. That bug run did reduce tool actions by 10.7% and wall time by 6.5%, suggesting fewer actions do not necessarily mean fewer tokens. USD cost was unavailable on subscription billing. See pilots 022–025 below.
+
+An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
+
+Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intended root and ran `rg --files` over the package, then attempted `uv` dependency downloads that the environment blocked. Targeted CLI tests passed, but full test collection failed because the system `mcp` package is incompatible with the repository. No treatment run was made, so this pilot contributes no efficacy estimate. The runner and environment setup must be fixed before another sample.
+
 ## Patterns worth keeping
 
 - **Targeted retrieval:** search for symbols and inspect matching regions instead of reading whole files. Cap output from unknown logs and commands. This is recommended in community coding-agent guidance such as [Austin Serb's AGENTS.md patterns](https://github.com/Austin1serb/agents-md), which reports a personal ~50% average reduction from a byte-capped output rule; that number is author-reported, not a general result.
@@ -424,3 +432,65 @@ The revised rule prevented the documentation regression seen in pilot 019, but t
 ## Current checkpoint after pilot 020
 
 The Skill still has no demonstrated stable token savings. Recent development-task pairs show +2.5%, +7.7%, then +3.8% token use for Skill; the revised documentation guard recovered the adjacent-doc quality regression but adds overhead and has only one post-change trial. Other tasks remain mixed, including two counterbalanced response-validation runs that pool to 2.5% fewer tokens. The minimum 2x target and 10x stretch target remain unmet by a wide margin. Continue with representative task pairs and counterbalanced order, but avoid adding broad workflow rules without evidence that their quality benefit justifies their measured overhead. Track usage, actions, elapsed time, and available cost; keep shared acceptance gates.
+
+## Local pilot 022: Zed documentation/config task (baseline first)
+
+This was a corrected-location, explicit-from-start Skill run on the same Zed task and source snapshot as pilot 018. Both used Codex CLI with `gpt-5.5`; baseline ran first. Both implementations passed an independently normalized 40/40 common suite. The Skill passed Ruff on its changed tests; the baseline hit the existing I001 import-order finding. The Skill also removed a Zed-specific no-secret-echo assertion from its task-created test, a security-test preservation failure. USD cost was unavailable.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 867,372 (808,576) | 922,779 (863,488) | — |
+| Output tokens | 6,296 | 5,961 | — |
+| Input + output tokens | 873,668 | 928,740 | +6.3% |
+| Tool actions | 37 | 36 | −2.7% |
+| Wall time | 165.415 s | 161.400 s | −2.4% |
+| Full common suite | 40/40 | 40/40 | tied |
+
+The process signals improved slightly while total token use increased; removal of the security assertion is a no-regression failure.
+
+## Local pilot 023: counterbalanced repeat of the Zed task
+
+Same source and prompt, Skill first, baseline second, same model and explicit Skill location/loading. After copying the treatment CLI test into the baseline copy, both passed the same 40/40 suite. Changed-file Ruff reported the same existing import-order issue in both. The Skill added an unrequested static `configs/zed.json`; no important behavior regression was found. USD cost was unavailable.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 540,381 (474,112) | 581,504 (535,296) | — |
+| Output tokens | 4,850 | 5,031 | — |
+| Input + output tokens | 545,231 | 586,535 | +7.6% |
+| Tool actions | 25 | 26 | +4.0% |
+| Wall time | 125.332 s | 131.393 s | +4.8% |
+| Full common suite | 40/40 | 40/40 | tied |
+
+## Local pilot 024: documentation/test preservation retest
+
+Same Zed task, baseline first, with the then-current preservation Skill. Both normalized full suites passed 41/41; both changed-file Ruff checks had the same existing I001 failure. The treatment kept the no-secret-echo test, but rewrote the Chinese Zed guidance and deleted `test_zed_config_preserves_paths_with_spaces`, an explicit requirement. This is a no-regression failure. USD cost was unavailable.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 525,212 (487,168) | 625,979 (571,776) | — |
+| Output tokens | 5,530 | 6,618 | — |
+| Input + output tokens | 530,742 | 632,597 | +19.2% |
+| Tool actions | 27 | 37 | +37.0% |
+| Wall time | 140.488 s | 163.812 s | +16.6% |
+| Full common suite | 41/41 | 41/41 | tied |
+
+This task's repeated pairs are consistently token-negative for the Skill, and pilot 024 also lost an acceptance test and neighboring guidance.
+
+## Local pilot 025: cross-layer invalid probability-mass bug
+
+This different task seeded invalid upstream probability mass that could cause a context selector to drop a pinned critical chunk. Both fixtures were identical, Skill ran first, and the Skill was explicitly loaded as the first repository operation. After normalizing the suite, both full common suites passed 39/39. The Skill replaced two direct unit regressions with one end-to-end `MockTransport` validation through the real selector; the shared suite passed, and the end-to-end test covered producer and consumer behavior. Both changed-file Ruff checks showed the same existing I001 failure. No live API was contacted; USD cost was unavailable.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 447,555 (413,696) | 451,781 (417,792) | — |
+| Output tokens | 5,019 | 3,867 | — |
+| Input + output tokens | 452,574 | 455,648 | +0.7% |
+| Tool actions | 28 | 25 | −10.7% |
+| Wall time | 127.188 s | 118.913 s | −6.5% |
+| Full common suite | 39/39 | 39/39 | tied |
+
+This is encouraging on actions and time, nearly tied on tokens, and far from a multi-fold token reduction.
+
+## Corrected checkpoint after pilots 022–026
+
+Valid explicit-load treatment pairs so far comprise three Zed feature trials and one cross-layer bug trial. They do not establish token savings, much less the 2x threshold. The Zed trials consistently used more tokens; the one different bug task nearly tied on tokens while using fewer actions and less time. Pilot 026 failed its runner/setup and has no treatment arm, so it is excluded. The next useful step is to repair the runner and dependency environment, then counterbalance multiple task types with the exact current Skill and no acceptance/test deletions. Do not pool across Skill revisions as if they were one treatment.

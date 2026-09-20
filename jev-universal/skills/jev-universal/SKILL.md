@@ -1,16 +1,15 @@
 ---
 name: jev-dev-efficient
-description: For coding/debugging or feature work that crosses components or files where the relevant contracts or root cause are unfamiliar, or repeated attempts/noisy output. Skip localized known-source changes. No TypeSafe account/API required; Jev-inspired workflow, not the Jev model.
+description: Use for unfamiliar coding, debugging, or feature work that crosses files or contracts. Skip localized changes with a known source and check. No TypeSafe account or API required.
 ---
 
 # Jev-inspired efficient development
 
-Use when requested behavior or a failure must be traced across components, clients, or runtime configuration and the relevant call path, interface contract, or root cause is not yet clear. This includes multi-file feature work with unfamiliar existing contracts, not only debugging. If the request identifies the source and exact change/checks, inspect those directly; do not perform a repository inventory. For an obvious small change, follow the request directly; this instruction can cost more than it saves.
+Use only when an unfamiliar bug or feature crosses files, components, or contracts. If the source and change are clear, do the task directly; this Skill can cost more than it saves.
 
-1. **Set the finish line.** Identify the requested change and acceptance check. Resolve from evidence any yes/no or choice that would change the implementation; ask only if necessary.
-2. **Narrow the search.** If the request names a subsystem or error, start there; do not inventory the whole repository or read its README first. Search the relevant symbols, tests, schemas, and direct callers, then inspect matching code. For a feature, trace the existing path and neighboring client/API contracts before extending them. Expand only if targeted search fails or evidence points elsewhere. Reuse unchanged results. Cap noisy command output and inspect useful matches or failure tails.
-3. **Choose and act.** Use the evidence to pick one next step. Every additional search must answer a specific unresolved question; do not re-scan to reconfirm findings already supported by code or tests. Make the smallest coherent patch using existing patterns. Preserve existing return fields and validation outside the requested fix; do not drop data or add indirection without evidence. Avoid unrelated refactors and parallel agents for dependent work.
-4. **Preserve adjacent guidance.** When editing a setup guide or shared configuration page, keep all existing clients, settings, and safety instructions that remain relevant. Re-read the edited section and confirm the new instructions did not replace or weaken neighboring guidance.
-5. **Verify and stop.** Run the smallest meaningful tests for the change; broaden only for shared interfaces or a new failure. Never skip required checks or hide failures to save tokens. Once acceptance is established, stop exploring and report the change, checks, and remaining issue briefly.
+1. **Set acceptance.** Identify the behavior and check. Resolve choices from evidence; ask only if an unresolved choice changes the implementation.
+2. **Search once, narrowly.** Start from named files, symbols, or subsystem. No opening `pwd`, whole-repo file list, or README. Batch one bounded search and reads of matching code, tests, contracts, and only the affected doc sections. Expand only when evidence requires it; do not reread unchanged files.
+3. **Patch additively.** Make the smallest coherent change. Preserve unrelated behavior, public fields, clients, settings, tests, and security assertions. For an additive feature, add a new test and doc bullet; do not rewrite or remove existing tests, client sections, examples, or safety notes. Only touch files needed for acceptance. Review one focused diff; unexplained deletions fail acceptance.
+4. **Verify once.** Run each requested acceptance/test/lint gate once. Use the existing environment and at most one local fallback after a setup failure. Do not retry network installs, rerun passing checks, clean caches, or inspect unrelated repo state. Never claim an unrun check passed. Stop when acceptance holds and report briefly.
 
-This borrows Jev's public pattern: narrow judgments, explicit decision rules, then act. The host model still performs the work. The Skill makes no accuracy, speed, or token-saving guarantee; demonstrate savings only with matched measurements of total tokens, tool calls, elapsed time, and task success.
+This adapts Jev's public idea of narrow judgments and explicit decision rules; the host model still does the work. It promises no fixed accuracy, speed, or token savings. Measure total input+output tokens, tool actions, elapsed time, and task success in matched runs.

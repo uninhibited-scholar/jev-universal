@@ -20,20 +20,16 @@ No API key or login is needed.
 
 Use it selectively for unfamiliar failures spanning components, noisy command
 output, or repeated diagnosis. Skip it for localized changes with known source
-and acceptance checks. Results remain exploratory: one forced-on local task used
-40% more tokens, while a separate JWT diagnosis saved tokens but dropped an
-existing returned claims field and failed an added compatibility check. Its revised
-repeat preserved behavior but used 79% more tokens. See the [pilot and research
-notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
+and acceptance checks. Latest controlled runs do not show a token saving: three
+Zed feature pairs used 6.3%, 7.6%, and 19.2% more total tokens with the Skill;
+one cross-layer bug pair used 0.7% more, while reducing tool actions by 10.7%
+and wall time by 6.5%. Earlier positive results include regressions and invalid
+or late Skill loading. See the [pilot and research notes](jev-universal/docs/efficiency-research.md)
+for the full evidence and limits.
 
-Six recent paired runs remain mixed. The Zed configuration feature was repeated
-three times: earlier Skill versions used 2.5% and 7.7% more total tokens; the
-latest version, with a documentation-preservation rule, used 3.8% more while
-retaining adjacent setup guidance. That run also took 7.0% longer. Other tasks
-include one 26.7% saving, one 9.7% increase, and one 14.6% saving. The repeated
-probability-mass task pools to only 2.5% fewer tokens. Shared tests passed, but
-stable savings are not established and the 2x target remains unmet; evaluation
-continues. The minimum target is 2x fewer tokens; 10x is a stretch goal.
+The target remains at least 2x fewer total tokens, with 10x as a stretch goal.
+Neither has been demonstrated. The Skill is an experimental workflow prompt,
+not a proven efficiency improvement; evaluation continues.
 
 ## Optional: TypeSafe API adapter
 
