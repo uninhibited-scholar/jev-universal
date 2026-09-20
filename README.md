@@ -26,10 +26,11 @@ existing returned claims field and failed an added compatibility check. Its revi
 repeat preserved behavior but used 79% more tokens. See the [pilot and research
 notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
 
-Two newer synthetic, cross-layer pilots also remain mixed: one saved 26.7% total
-tokens and the next used 9.7% more than baseline. Both passed their identical
-locally runnable correctness gates, but neither approaches the 2x target. The
-evaluation is ongoing; these small local trials do not establish a general saving.
+Three newer synthetic, cross-layer runs remain mixed: one pair saved 26.7% total
+tokens, the next used 9.7% more, and a counterbalanced repeat saved 14.6%. The two
+repeats of the same task pool to only 2.5% fewer tokens. All passed identical
+locally runnable correctness gates, but this does not establish a stable saving
+or approach the 2x target. The evaluation is ongoing.
 
 ## Optional: TypeSafe API adapter
 

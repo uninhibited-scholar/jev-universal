@@ -342,6 +342,24 @@ This synthetic regression weakened the TypeSafe probability-mass check so a dist
 
 The Skill made the smaller source change: it tightened the producer's probability-mass tolerance. Baseline also added a defensive consumer check that keeps malformed or contradictory answers. Both satisfy the shared end-to-end safety gate, but their implementations are not identical. The Skill was 7.4% faster while using 9.7% more total tokens and one more tool action, so this is a correctness success and token-efficiency failure.
 
-## Current checkpoint after pilot 016
+## Local pilot 017: counterbalanced repeat of pilot 016
 
-Two recent confirmed Skill invocations on different synthetic task types produce mixed token results: pilot 015 saved 26.7%, while pilot 016 used 9.7% more than baseline. Both passed their identical, locally runnable correctness gates and both used a different arm order. Runtime favored Skill in both pairs, but two single-run pairs do not demonstrate stable gains; neither approaches 2x. These results reinforce that the Skill's useful differentiator is narrow, evidence-led action with explicit contract preservation, not a reliable token multiplier yet. Continue paired repeats across representative task types, preserve exact usage/action/time telemetry, and do not claim a general saving until the evidence supports it. Codex subscription runs do not expose per-run USD cost.
+We repeated the same seeded probability-mass/context-selection task on fresh copies, this time running baseline first and Skill second. This reverses pilot 016's order. The Skill body was present in the treatment trace. Both implementations rejected a malformed 0.90 probability total, and both passed the exact same 37-test non-socket suite and changed-file Ruff checks. The full suite again hit the environment's denied loopback socket test. The baseline run needed a syntax correction after its first source edit and spent more time on repeated verification; this is included in the measured process duration, so the runtime comparison is especially noisy.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 414,658 | 354,136 | −14.6% |
+| Cached input (subset of input) | 385,024 | 322,432 | −16.3% |
+| Output tokens | 4,849 | 3,961 | −18.3% |
+| Input + output tokens | 419,507 | 358,097 | −14.6% |
+| Tool actions (commands + file changes) | 26 | 24 | −7.7% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 274.368 s | 104.703 s | −61.8% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical non-socket suite | 37/37 | 37/37 | tied |
+
+The repeat favors the Skill on tokens, but pilot 016 on the same task type went the other direction (+9.7% tokens for Skill). Pooling only this counterbalanced task-type repeat gives baseline 837,775 versus Skill 817,012 total tokens, a 2.5% reduction. Tool actions are nearly tied (56 versus 55). The pooled runtime difference is −43.1%, but pilot 017 includes a baseline syntax repair and extra verification, so it is not reliable evidence of a general speed effect. Two repetitions do not demonstrate stable efficiency.
+
+## Current checkpoint after pilot 017
+
+Across three recent Skill invocations on two synthetic task types, results remain mixed: pilot 015 saved 26.7%, pilot 016 used 9.7% more tokens, and the counterbalanced pilot 017 repeat saved 14.6%. The two repeats of the response-validation task pool to only 2.5% fewer tokens, with nearly tied tool actions. All paired gates passed, but these small local trials do not establish a stable gain, and no result approaches the 2x target. Keep the Skill goal active and continue repeated pairs across representative development tasks. Codex subscription runs do not expose per-run USD cost.
