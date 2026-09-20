@@ -18,10 +18,12 @@ directory supported by your AI client, then start a new conversation. Or copy
 the `SKILL.md` instructions into the assistant's project/user instructions.
 No API key or login is needed.
 
-Use it selectively for repository-scale debugging, noisy command output, or
-repeated diagnosis. Skip it when the request already names the subsystem,
-behavior, and acceptance checks. A forced-on control for such a localized task
-used 40% more tokens, even though it finished sooner; see the [pilot and research
+Use it selectively for unfamiliar failures spanning components, noisy command
+output, or repeated diagnosis. Skip it for localized changes with known source
+and acceptance checks. Results remain exploratory: one forced-on local task used
+40% more tokens, while a separate JWT diagnosis saved tokens but dropped an
+existing returned claims field and failed an added compatibility check. Its revised
+repeat preserved behavior but used 79% more tokens. See the [pilot and research
 notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
 
 ## Optional: TypeSafe API adapter

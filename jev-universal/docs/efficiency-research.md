@@ -190,4 +190,118 @@ The native Codex event reports `input_tokens` as the total input count and `cach
 
 ## Checkpoint after Codex control
 
-Positive Claude pilots 005–007 remain a small, two-task-type sample at −30.7% pooled tokens. Forced Claude pilot 008 increased tokens by 40.4%. Codex pilot 009 did not provide an observable Skill-load event and increased measured tokens by 48.8%, so it cannot be attributed to the Skill body. The candidate applicability gate is still unvalidated in an in-scope, repeated Codex task. The 2x goal remains unmet; a proper follow-up must use a repository-scale diagnosis that matches the trigger, counterbalance order, and capture monotonic runtime as well as model usage.
+Positive Claude pilots 005–007 remain a small, two-task-type sample at −30.7% pooled tokens. Forced Claude pilot 008 increased tokens by 40.4%. Codex pilot 009 did not provide an observable Skill-load event and increased measured tokens by 48.8%, so it cannot be attributed to the Skill body. The candidate applicability gate was exercised in an in-scope task in pilots 010–011, but only pilot 010 shows Skill-body evidence and the results do not repeat. The 2x goal remains unmet; follow-ups need repeated observed invocations across task types, counterbalanced order, monotonic runtime, and a pricing basis.
+
+
+## Local pilot 010: cross-layer dotenv diagnosis (baseline first)
+
+We seeded the same regression into identical package copies: dotenv interpolation was enabled by default, so `${HOME}` inside a valid API key could be expanded before validation. The task reported a symptom across generated Claude/Kimi client configuration, private dotenv loading, and key validation; it required preserving exported-environment precedence, keeping secrets out of config/output, adding coverage, and making no live API request. This matches the Skill's intended cross-component diagnosis trigger. Both runs used Codex CLI 0.143.0 with `gpt-5.5`, the same tool policy and sandbox, and the same task. The Skill fixture exposed the current Skill through `.agents/skills`; baseline had none. Baseline ran first. A monotonic wrapper captured elapsed runtime; Codex does not expose per-run dollar cost on the subscription plan.
+
+Both patches restored non-interpolating dotenv loading; the resulting `cli.py` files were identical. Both full suites passed 39/39. The Skill treatment trace includes the Skill name and body heading, which is evidence that it was read in this run (the CLI has no structured skill-load event).
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 451,559 | 366,027 | −18.9% |
+| Cached input (subset of input) | 412,416 | 330,368 | −19.9% |
+| Output tokens | 5,611 | 4,507 | −19.7% |
+| Input + output tokens | 457,170 | 370,534 | −18.9% |
+| Tool actions (shell + file changes) | 33 | 25 | −24.2% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 137.477 s | 117.770 s | −14.3% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Full test suite | 39/39 | 39/39 | tied |
+
+This is a positive, in-scope single pair, but it is about 1.23x fewer tokens, far short of the 2x target.
+
+## Local pilot 011: counterbalanced repeat
+
+We repeated the same seeded task and runtime setup using fresh fixture copies, this time running Skill first. The Skill treatment trace did not contain the Skill name/body heading, so body invocation is not evidenced for this arm. Its patch introduced a helper around `dotenv_values(interpolate=False)` while baseline changed the existing `load_dotenv` option; both satisfy the behavior, but the treatment did more work. The first agent-selected suite sizes differed (39 versus 40); we copied the broader regression test file into the treatment fixture and then ran the same full suite in both: 40/40 passed.
+
+| Measure | Baseline | Skill available | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 308,358 | 539,155 | +74.9% |
+| Cached input (subset of input) | 273,920 | 496,768 | +81.4% |
+| Output tokens | 4,559 | 5,785 | +26.9% |
+| Input + output tokens | 312,917 | 544,940 | +74.2% |
+| Tool actions (shell + file changes) | 29 | 34 | +17.2% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 115.656 s | 152.378 s | +31.8% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical full test suite | 40/40 | 40/40 | tied |
+
+This is a counterbalanced repeat but not a second confirmed Skill-body invocation. Across the two baseline runs, usage was 770,087 tokens and 253.133 s; across Skill-available runs it was 915,474 tokens and 270.148 s. That combined +18.9% token use and +6.7% runtime must not be presented as a skill-effect estimate because pilot 011 has no evidenced body load. It does show that Skill selection is inconsistent and that outcomes on a repeated task vary substantially.
+
+## Current checkpoint after pilot 011
+
+The first confirmed in-scope Codex treatment (pilot 010) saved 18.9% tokens, 24.2% tool actions, and 14.3% time while matching all tests. This is below the target and has only one confirmed invocation. The counterbalanced pilot 011 was not a confirmed Skill invocation and was worse than baseline. The applicability description was revised to name unfamiliar cross-component failure diagnosis as a trigger while continuing to exclude localized changes with a known source and acceptance checks. That routing change remains unvalidated. Keep the goal active and repeat on multiple task types with observed Skill invocation, identical acceptance gates, counterbalanced order, token telemetry, monotonic elapsed timing, and a recorded pricing basis where available.
+
+
+## Local pilot 012: revised trigger, Skill-first repeat
+
+We repeated pilot 010's exact seeded dotenv regression on fresh copies after revising the description to explicitly cover unfamiliar cross-component failures. Skill ran first. The Skill/body heading was present in its trace; baseline had no Skill fixture. Both resulting `cli.py` implementations restored the existing `load_dotenv(..., interpolate=False)` option and were identical. The same regression test file was copied into both fixtures after the runs to equalize acceptance coverage; both full suites passed 40/40.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 468,285 | 377,121 | −19.5% |
+| Cached input (subset of input) | 421,632 | 339,200 | −19.5% |
+| Output tokens | 5,773 | 4,545 | −21.3% |
+| Input + output tokens | 474,058 | 381,666 | −19.5% |
+| Tool actions (shell + file changes) | 33 | 21 | −36.4% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 142.032 s | 121.929 s | −14.2% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical full test suite | 40/40 | 40/40 | tied |
+
+Across the two confirmed Skill-body runs (pilot 010 baseline-first and pilot 012 Skill-first), input-plus-output usage fell from 931,228 to 752,200 tokens (−19.2%), elapsed time fell from 279.509 to 239.699 seconds (−14.2%), and tool actions fell from 66 to 46 (−30.3%). This is a repeatable direction on one seeded task type, not evidence across representative task types or of a multi-fold saving. Pilot 011 remains evidence that Skill discovery did not happen consistently before the description change.
+
+## Current checkpoint after pilot 012
+
+The revised description now has two observed Skill-body invocations on the same cross-layer dotenv task, with counterbalanced order and similar token savings (−18.9% and −19.5%). This is materially stronger than the earlier one-shot results but still only one task type, one model, and about 1.24x fewer tokens. Pilot 011's non-invocation and adverse available-Skill result remains a routing failure signal; pilot 009 showed the localized skip case is noisy. No per-run USD cost is available for Codex subscription runs. Next, test a different cross-file failure class with the current Skill while preserving identical security regression gates, then repeat before broad claims. The target of 2x remains unmet.
+
+
+## Local pilot 013: JWT audience isolation and compatibility audit
+
+We seeded removal of JWT audience validation in fresh package copies. The task asked for end-to-end public OAuth/MCP diagnosis, strict audience isolation, preservation of issuer/expiry/scope checks, local-only test keys, and a full suite. Codex CLI `gpt-5.5` ran baseline first; the updated Skill was available in the treatment, and its name/body heading appeared in the trace. No external issuer or TypeSafe API was contacted.
+
+Both agents restored audience validation and kept the same issuer/expiry/scope checks. The treatment also removed `claims=claims` from the returned `AccessToken`; that unrequested change was not covered by the agent-selected tests. We then applied the same broader 40-test auth suite to both copies, adding a compatibility assertion that a valid `AccessToken` continues exposing its validated `claims` field. Baseline passed 40/40. Treatment passed 39 and failed that assertion (`claims` was `None`). This is a real behavior regression, so the large token/time reduction below does **not** count as a successful Skill result.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 753,076 | 410,900 | −45.4% |
+| Cached input (subset of input) | 705,408 | 378,880 | −46.3% |
+| Output tokens | 7,423 | 4,066 | −45.2% |
+| Input + output tokens | 760,499 | 414,966 | −45.4% |
+| Tool actions (shell + file changes) | 43 | 28 | −34.9% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 193.623 s | 121.771 s | −37.1% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Common 40-test gate | 40/40 | 39/40 | treatment failed compatibility check |
+
+The token and speed reductions are not quality-adjusted gains. This run exposed that the Skill's “smallest patch” instruction needs an explicit preservation rule for existing return contracts and validated data. The Skill was updated accordingly; the fix remains to be tested on a fresh task.
+
+## Current checkpoint after pilot 013
+
+Two confirmed Skill-body runs on the dotenv task saved about 19% tokens with equal tests, in counterbalanced order. A different JWT task showed a much larger apparent reduction but regressed an existing `AccessToken.claims` behavior and failed the common gate. Thus the Skill has not yet demonstrated reliable savings across task types without regressions. Its applicability and preservation instructions have now been revised from observed misses, but those revisions are unvalidated. Continue with fresh tasks and repeats; the 2x goal remains unmet.
+
+
+## Local pilot 014: preservation rule, counterbalanced JWT repeat
+
+We repeated pilot 013 with the revised Skill and Skill-first order. The updated Skill body was present in the treatment trace. Baseline followed. Both agents restored the configured audience check and retained the existing `AccessToken.claims` field. The implementation files were behaviorally identical apart from the ordering of `issuer` and `audience` keyword arguments. The same treatment-auth regression suite, including a valid multi-audience token and claims preservation assertion, was applied to both copies after the runs; both full suites passed 38/38.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 347,013 | 622,044 | +79.3% |
+| Cached input (subset of input) | 314,880 | 577,664 | +83.5% |
+| Output tokens | 4,231 | 4,871 | +15.1% |
+| Input + output tokens | 351,244 | 626,915 | +78.5% |
+| Tool actions (shell + file changes) | 22 | 34 | +54.5% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 104.746 s | 127.490 s | +21.7% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical full test suite | 38/38 | 38/38 | tied |
+
+The revised preservation instruction prevented the pilot 013 claims regression, but this repeat used substantially more tokens, actions, and time than baseline. It is a correctness success and an efficiency failure. It also shows the positive token result in pilot 013 was confounded by a behavior regression and cannot be used as evidence of savings.
+
+## Current checkpoint after pilot 014
+
+On the dotenv task, two confirmed Skill-body runs saved about 19% tokens with equal tests, in counterbalanced order. On the JWT task, the initial Skill run saved tokens but removed `AccessToken.claims` and failed an added compatibility check; after the preservation rule was added, the next Skill run preserved behavior and passed the common tests but used 78.5% more tokens. Thus correctness improved, but token efficiency is not stable across task types. The 2x target remains unmet. Continue with representative tasks and repeats, retain shared compatibility gates, instrument elapsed time and report the unavailable per-run cost honestly.
