@@ -4,7 +4,7 @@ This document combines a design review with local pilot benchmark results. Commu
 
 ## Current evaluation checkpoint (2026-09-21)
 
-The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. P050–051 are an order-balanced, quality-valid repeat on a key-file/configuration task, saving 21.8% and 46.1%. But on a second, all-pinned metadata task with the same Skill revision, candidates used 28.8% and 10.1% more tokens in P052–053. Thus the savings do not yet generalize across task types. Earlier evidence remains mixed: RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. The last evaluated revision (commit `48ad1e4`) saved 15.4% and 4.0% in an order-balanced all-pinned task pair and 26.3% in one key-file feature run, but the key-file order-reversed repeat P057 was invalidated by a dataless Python environment hanging during import. Its cross-task reliability and the 2x goal remain unproven. A stricter rule against rediscovering named files is now in the draft and still needs a matched evaluation. Earlier evidence remains mixed: RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
 
 An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
 
@@ -694,3 +694,30 @@ This second task type fixed a real output-shape mismatch: the all-pinned `jev_se
 | 053 | baseline → candidate | 196,779 | 216,593 | +10.1% | 18 → 17 | 78.363 → 75.712 s (−3.4%) |
 
 Cached input was 212,096/274,304 baseline/candidate in P052 and 173,440/194,304 in P053; output tokens were 3,520/3,787 and 2,997/2,957. USD cost was unavailable. Traces show the Skill candidate still inventoried/scanned tests and repeated broad searches after targeted paths were known; the new working-set rule narrows those behaviors. That revision is not yet measured. P052–053 are quality-valid but are counterevidence to general token savings, not successful efficacy results.
+
+
+## Local pilots 054–055: narrowed working-set rule
+
+P054–055 repeated the identical P052–053 all-pinned metadata task from clean commit `48ad1e4`, with the same model (`gpt-5.5`), task prompt, environment and gates. The Skill candidate first in P054 and second in P055. Both candidates and baselines added focused tests without editing existing tests; all four full suites passed 41 tests and targeted Ruff passed. Codex traces show candidates did fewer repository commands after the rule discouraged test-tree inventories when target paths were known.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 054 | candidate → baseline | 245,654 | 207,718 | −15.4% | 17 → 12 (−29.4%) | 74.997 → 71.082 s (−5.2%) |
+| 055 | baseline → candidate | 309,886 | 297,340 | −4.0% | 21 → 15 (−28.6%) | 85.037 → 78.029 s (−8.2%) |
+
+Cached input was 222,720/175,872 baseline/candidate in P054 and 266,496/266,112 in P055; output tokens were 2,817/2,729 and 3,198/2,784. Subscription billing exposes no per-run USD cost. The positive direction survived order reversal, but savings were modest and are demonstrated only on this task.
+
+## Local pilots 056–057: key-file behavior
+
+P056–057 reused the same key-file expansion task and exact prompt as P050–051, on clean commit `48ad1e4` and the newer Skill revision. The requested behavior includes preserving environment-key precedence, absolute paths, literal `$VARS`, generic errors, additive tests and English/Chinese documentation. P056 ran candidate first; the P057 baseline ran first, but its candidate arm could not complete verification and is excluded.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 056 | candidate → baseline | 343,450 | 253,098 | −26.3% | 20 → 13 (−35.0%) | 91.239 → 84.059 s (−7.9%) |
+
+Cached input was 313,600/225,024 baseline/candidate; output tokens were 3,554/3,482. Both P056 arms passed all 42 tests and targeted Ruff. P057 candidate implemented the requested code and added tests, but its runner hung reading Python package files that macOS File Provider marked `dataless`; it never produced a usable test result or completed trace. Its partial data is not efficacy evidence. No per-run USD cost was available. Repeat the key-file task under a hydrated common environment before drawing a conclusion about the newer Skill across task types.
+
+
+### P057 environment incident
+
+The P057 candidate made the requested key-file code/test/documentation changes, but verification stalled while Python tried to read `pytest/__init__.py`, which File Provider reported as `isDownloaded=0` and marked `dataless`. Direct reads of the repository's `.git/config` also stalled after it became dataless. We stopped the run; no candidate completion, test result, candidate usage total or runtime was produced. Exclude P057 from efficacy calculations. This is a hydration failure in the local workspace environment, not a product test failure. Future runs must first verify that the shared virtualenv and Git metadata are hydrated, or use a pre-existing fully local environment without changing dependency versions.
