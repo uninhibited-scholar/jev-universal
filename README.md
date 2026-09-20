@@ -26,6 +26,11 @@ existing returned claims field and failed an added compatibility check. Its revi
 repeat preserved behavior but used 79% more tokens. See the [pilot and research
 notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
 
+Two newer synthetic, cross-layer pilots also remain mixed: one saved 26.7% total
+tokens and the next used 9.7% more than baseline. Both passed their identical
+locally runnable correctness gates, but neither approaches the 2x target. The
+evaluation is ongoing; these small local trials do not establish a general saving.
+
 ## Optional: TypeSafe API adapter
 
 The repository also retains an MCP adapter for people who already have TypeSafe

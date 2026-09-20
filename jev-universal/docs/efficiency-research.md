@@ -305,3 +305,43 @@ The revised preservation instruction prevented the pilot 013 claims regression, 
 ## Current checkpoint after pilot 014
 
 On the dotenv task, two confirmed Skill-body runs saved about 19% tokens with equal tests, in counterbalanced order. On the JWT task, the initial Skill run saved tokens but removed `AccessToken.claims` and failed an added compatibility check; after the preservation rule was added, the next Skill run preserved behavior and passed the common tests but used 78.5% more tokens. Thus correctness improved, but token efficiency is not stable across task types. The 2x target remains unmet. Continue with representative tasks and repeats, retain shared compatibility gates, instrument elapsed time and report the unavailable per-run cost honestly.
+
+## Local pilot 015: MCP public-Origin configuration
+
+This synthetic regression changed the public OAuth resource's allowed Origin from its configured HTTPS scheme to HTTP. It was chosen as a distinct transport-security boundary task; it is not a confirmed production incident. Codex CLI `gpt-5.5` ran baseline first and Skill second. The Skill body was visible in the treatment trace. Both changes derived the trusted public Origin from the configured URL and retained rejection of an untrusted origin. We normalized the auth test file after both runs and ran the exact same non-socket suite in each fixture: 36/36 passed. The full suite's local socket test could not bind `127.0.0.1` in this environment.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 493,152 | 361,490 | −26.7% |
+| Cached input (subset of input) | 458,496 | 318,080 | −30.7% |
+| Output tokens | 5,980 | 4,249 | −29.0% |
+| Input + output tokens | 499,132 | 365,739 | −26.7% |
+| Tool actions (commands + file changes) | 37 | 26 | −29.7% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 158.989 s | 113.650 s | −28.5% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical non-socket suite | 36/36 | 36/36 | tied |
+
+This is a positive one-pair result at about 1.36x fewer tokens. It is synthetic and single-run; it does not establish a general effect.
+
+## Local pilot 016: response-validation to context-selection contract
+
+This synthetic regression weakened the TypeSafe probability-mass check so a distribution totaling 0.90 passed validation and could be consumed by `jev_select_context` to omit unpinned context. It was introduced identically in fresh fixtures and used only local `httpx.MockTransport` responses. The Skill ran first, then baseline, reversing pilot 015's order. The treatment trace includes the Skill body. Both arms restored strict enough distribution validation and passed the same 37-test non-socket gate, including an end-to-end assertion that malformed upstream mass cannot yield a context-omission result. Both changed-file Ruff checks passed. Full-suite collection reached the existing socket-binding test, which the environment denied; a full-repository Ruff run also reported existing import-order findings outside the changed files.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 412,077 | 453,636 | +10.1% |
+| Cached input (subset of input) | 377,856 | 419,584 | +11.0% |
+| Output tokens | 6,191 | 5,279 | −14.7% |
+| Input + output tokens | 418,268 | 458,915 | +9.7% |
+| Tool actions (commands + file changes) | 30 | 31 | +3.3% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 143.803 s | 133.121 s | −7.4% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical non-socket suite | 37/37 | 37/37 | tied |
+
+The Skill made the smaller source change: it tightened the producer's probability-mass tolerance. Baseline also added a defensive consumer check that keeps malformed or contradictory answers. Both satisfy the shared end-to-end safety gate, but their implementations are not identical. The Skill was 7.4% faster while using 9.7% more total tokens and one more tool action, so this is a correctness success and token-efficiency failure.
+
+## Current checkpoint after pilot 016
+
+Two recent confirmed Skill invocations on different synthetic task types produce mixed token results: pilot 015 saved 26.7%, while pilot 016 used 9.7% more than baseline. Both passed their identical, locally runnable correctness gates and both used a different arm order. Runtime favored Skill in both pairs, but two single-run pairs do not demonstrate stable gains; neither approaches 2x. These results reinforce that the Skill's useful differentiator is narrow, evidence-led action with explicit contract preservation, not a reliable token multiplier yet. Continue paired repeats across representative task types, preserve exact usage/action/time telemetry, and do not claim a general saving until the evidence supports it. Codex subscription runs do not expose per-run USD cost.
