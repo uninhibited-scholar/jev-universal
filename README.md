@@ -26,14 +26,14 @@ existing returned claims field and failed an added compatibility check. Its revi
 repeat preserved behavior but used 79% more tokens. See the [pilot and research
 notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
 
-Five recent paired runs remain mixed. The same Zed configuration feature was
-repeated in counterbalanced order: Skill used 2.5% more total tokens in one run
-and 7.7% more in the repeat; pooled, it used 4.7% more. The repeat also exposed a
-documentation regression in the Skill arm, which removed existing settings
-preservation guidance. Other tasks include one 26.7% saving, one 9.7% increase,
-and one 14.6% saving. The repeated probability-mass task pools to only 2.5% fewer
-tokens. Shared tests passed, but stable savings are not established and the 2x
-target remains unmet; evaluation continues.
+Six recent paired runs remain mixed. The Zed configuration feature was repeated
+three times: earlier Skill versions used 2.5% and 7.7% more total tokens; the
+latest version, with a documentation-preservation rule, used 3.8% more while
+retaining adjacent setup guidance. That run also took 7.0% longer. Other tasks
+include one 26.7% saving, one 9.7% increase, and one 14.6% saving. The repeated
+probability-mass task pools to only 2.5% fewer tokens. Shared tests passed, but
+stable savings are not established and the 2x target remains unmet; evaluation
+continues. The minimum target is 2x fewer tokens; 10x is a stretch goal.
 
 ## Optional: TypeSafe API adapter
 

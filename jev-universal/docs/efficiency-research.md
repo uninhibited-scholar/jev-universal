@@ -403,6 +403,24 @@ The Skill edit regressed adjacent English setup documentation: it removed the ge
 
 Across the two order-reversed repetitions of this feature task, baseline used 1,084,926 total tokens and Skill used 1,136,036, or 4.7% more for Skill. Pilot 018 had fewer Skill tool actions and elapsed time, but this repeat ties actions; elapsed time was not retained for pilot 019. The paired evidence is mixed on process signals and negative on pooled tokens. We added a specific adjacent-documentation preservation check to the Skill; that revision requires a fresh evaluation before drawing conclusions.
 
-## Current checkpoint after pilot 019
+## Local pilot 020: retest after adding documentation-preservation rule
 
-Across five recent matched pairs, the Skill's token results remain inconsistent: one saved 26.7%, one used 9.7% more, the counterbalanced repeat saved 14.6%, and the two repetitions of a Zed feature task used 2.5% and 7.7% more. The probability-mass pair pools to only 2.5% fewer tokens; the Zed feature pair pools to 4.7% more. Tests have passed on common gates, but the Skill has also caused documented compatibility/documentation regressions in earlier pilots. There is no evidence of stable savings, much less 2x. The latest preservation-rule revision is a new candidate and must be tested. Continue representative counterbalanced pairs, exact usage telemetry, and no-regression gates.
+We repeated the same Zed feature task from the same source commit with the revised Skill, running Skill first and baseline second. This reverses pilot 019's order. The new rule was visible in the Skill trace. Both outputs retained the existing Claude, Kimi, ZCode, and Codex setup guidance while adding Zed instructions; neither deleted the general merge-only/preserve-other-settings guidance. Both passed the same independently run full 40-test suite. The changed-file Ruff check reported the same existing import-order finding in each arm. Per-run USD cost is unavailable under subscription billing.
+
+| Measure | Baseline | Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cached) | 507,182 | 526,338 | +3.8% |
+| Cached input (subset of input) | 461,824 | 477,824 | +3.5% |
+| Output tokens | 4,861 | 5,418 | +11.5% |
+| Input + output tokens | 512,043 | 531,756 | +3.8% |
+| Tool actions (commands + file changes) | 26 | 27 | +3.8% |
+| Model turns | 1 | 1 | tied |
+| Wall time | 127.079 s | 136.022 s | +7.0% |
+| Per-run USD cost | unavailable (subscription) | unavailable (subscription) | — |
+| Identical full test suite | 40/40 | 40/40 | tied |
+
+The revised rule prevented the documentation regression seen in pilot 019, but this is one corrected-quality repetition, not proof of a general quality improvement. It cost 3.8% more total tokens and 7.0% more time on this task. Across pilots 018–020, baseline totals 1,596,969 tokens and the respective Skill versions total 1,667,792 (+4.4%); because the Skill changed after pilot 019, this pooled figure is descriptive only, not an estimate for one fixed treatment.
+
+## Current checkpoint after pilot 020
+
+The Skill still has no demonstrated stable token savings. Recent development-task pairs show +2.5%, +7.7%, then +3.8% token use for Skill; the revised documentation guard recovered the adjacent-doc quality regression but adds overhead and has only one post-change trial. Other tasks remain mixed, including two counterbalanced response-validation runs that pool to 2.5% fewer tokens. The minimum 2x target and 10x stretch target remain unmet by a wide margin. Continue with representative task pairs and counterbalanced order, but avoid adding broad workflow rules without evidence that their quality benefit justifies their measured overhead. Track usage, actions, elapsed time, and available cost; keep shared acceptance gates.
