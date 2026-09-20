@@ -19,9 +19,10 @@ the `SKILL.md` instructions into the assistant's project/user instructions.
 No API key or login is needed.
 
 Use it selectively for repository-scale debugging, noisy command output, or
-repeated diagnosis. Skip it for small changes with obvious files and checks:
-our first paired pilot found that this task paid more instruction overhead than
-it saved. See the [pilot and research notes](jev-universal/docs/efficiency-research.md).
+repeated diagnosis. Skip it when the request already names the subsystem,
+behavior, and acceptance checks. A forced-on control for such a localized task
+used 40% more tokens, even though it finished sooner; see the [pilot and research
+notes](jev-universal/docs/efficiency-research.md) for the full evidence and limits.
 
 ## Optional: TypeSafe API adapter
 

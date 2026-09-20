@@ -132,11 +132,37 @@ On a second task type, both agents updated `TYPESAFE_API_KEY_FILE` to accept `~/
 
 ### Current checkpoint
 
-Across pilots 005–007, pooled input-plus-output usage fell from 460,821 to 319,483 tokens (−30.7%, about 1.44x fewer) and pooled wall time fell about 23%. Reported cost fell about 28%. This is promising but exploratory: only two distinct task types are represented, with the authentication case repeated; the sample is too small to establish reliability or generalize to other models/repositories. Earlier pilots with the longer Skill showed mixed or adverse results. Keep the goal active and add further task types and repetitions before asserting stable savings. The 2x target remains unmet; 10x has no supporting evidence.
+Across pilots 005–007, pooled input-plus-output usage fell from 460,821 to 319,483 tokens (−30.7%, about 1.44x fewer), wall time fell about 23%, and reported cost fell about 28%. That checkpoint covered only two task types and was too small to establish reliability. Pilot 008 below is a forced-invocation applicability control, not an in-scope repository-scale task; pooling it with the earlier runs would obscure that distinction. Earlier pilots with the longer Skill showed mixed or adverse results. Keep the goal active and add further in-scope task types and repetitions before asserting stable savings. The 2x target remains unmet; 10x has no supporting evidence.
 
 
 ## Reproducibility checkpoint (2026-09-20)
 
 We reran the same acceptance command outside the agent approval layer for both pilot 007 fixture copies: `uv run --no-editable pytest tests/test_cli.py tests/test_core.py -q`. Baseline and Skill each passed 29/29 tests. The original agent test commands had been blocked by approval, so this independent rerun closes that verification gap for pilot 007.
 
-The seven pilots are stored as local JSONL traces under the ignored `.local/efficiency/` directory because they contain private prompts and local paths; only sanitized aggregate metrics are published here. New model-driven pairs are temporarily paused: the authenticated Claude Code CLI reported 98% utilization of its seven-day usage window at the last recorded check. No additional generation was started after that point. This is an account-capacity constraint, not a Skill evaluation result. The goal remains open; resume with a new task type and swapped run order when an authorized evaluation budget is available.
+The pilot traces are stored as local JSONL under the ignored `.local/efficiency/` directory because they contain private prompts and local paths; only sanitized aggregate metrics are published here. At this checkpoint, the authenticated Claude Code CLI reported 98% utilization of its seven-day window and we paused. Pilot 008 was later run as a single bounded pair when the CLI continued to allow requests; its trace then reported 99% utilization. After recording that pair, we stopped further paid model runs. This is an account-capacity constraint, not a Skill evaluation result. The goal remains open.
+
+
+## Local pilot 008: forced-invocation applicability control
+
+This control used the same copied package, task text, Claude Code 2.1.266, `claude-sonnet-4-6`, permissions, tool allowlist, and $0.50 per-run budget cap. Baseline ran first; the Skill treatment received the then-current Skill as an appended instruction. The task named the subsystem, exact privacy behavior, and acceptance checks. Under the Skill's stated applicability rule it should have skipped the workflow, but this experiment forcibly supplied it to measure the cost of over-invocation. Treat the result as a stress/control case, not an estimate for correctly triggered use.
+
+Both agents removed pinned chunk text from the state sent to the evaluator and avoided calling the evaluator when all chunks were pinned. The final code changes were equivalent. The same full test suite was run independently in both copies: 39/39 passed in each, including the regression checks.
+
+| Measure | Baseline | Forced Skill | Change |
+|---|---:|---:|---:|
+| Input tokens (including cache read/create) | 371,723 | 524,116 | +41.0% |
+| Output tokens | 5,417 | 5,459 | +0.8% |
+| Input + output tokens | 377,140 | 529,575 | +40.4% |
+| Tool calls | 14 | 21 | +50.0% |
+| Model turns | 15 | 22 | +46.7% |
+| Wall time | 102.4 s | 93.9 s | −8.3% |
+| Reported cost | $0.4176 | $0.4643 | +11.2% |
+| Full test suite | 39/39 | 39/39 | tied |
+
+The run used only `claude-sonnet-4-6`; its reported input comprised 13 uncached, 332,264 cache-read, and 39,446 cache-create tokens in baseline, versus 15 uncached, 496,702 cache-read, and 27,399 cache-create tokens with the Skill. Outputs were 5,417 and 5,459. The Skill treatment made seven more tool calls, including three extra globs and two extra reads. It was somewhat faster, but token use and cost increased. This reinforces the need for strict applicability gating: force-invoking the Skill on a localized, fully specified task can erase prior savings.
+
+A separate CLI calibration used a $0.05 maximum-budget flag, but the smallest request was reported at $0.0678 after 11,282 cache-creation tokens and ended as budget-exhausted. The flag did not act as a hard billing ceiling; that calibration is excluded from task-pair metrics. Subsequent Claude trace rate-limit events showed 99% seven-day utilization, so no more paid model runs were started in this checkpoint.
+
+## Current checkpoint after pilot 008
+
+The positive pilots 005–007 remain exploratory and their pooled −30.7% token result is not stable evidence. Pilot 008 is deliberately excluded from the triggered-use estimate because the correct behavior under the Skill's own trigger is to skip it; as a forced-on control it worsened total tokens by 40.4% while both arms passed the same full suite. The candidate Skill was tightened to make the applicability gate explicit and to require each additional search to answer a specific unresolved question. This is a hypothesis for the next paired run, not a validated improvement. The goal remains active.
