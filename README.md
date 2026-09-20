@@ -21,13 +21,14 @@ No API key or login is needed.
 Use it selectively for unfamiliar multi-file features, bugs, or debugging
 tasks, especially when the relevant implementation is not yet clear. Skip it
 for localized changes with known source and acceptance checks. After a clean
-no-Skill comparison showed no savings from the longer version, we replaced it
-with a 921-character compact Skill. In two order-balanced runs on the same
-cross-file Zed config feature, it used 22.9% and 5.2% fewer tokens; pooled
-usage was 15.2% lower. On a second task family adding search context to the
-output recall CLI, it used 4.8% more tokens pooled across two repetitions,
-with three more actions and 0.9% more elapsed time. This mixed, narrow evidence
-does not establish general savings. The 2x target remains unmet. See the
+no-Skill comparison showed no savings from the longer version, we iterated on
+the Skill and its runner. The latest 1,123-character version used 35.1% fewer
+tokens across two same-prompt, order-balanced repetitions of an output-recall
+CLI feature; it also used 28 fewer tool actions and 33.9% less time. All 52
+package tests passed in each arm. This is one task family, so it does not
+establish general savings. Earlier P077/P078 results used an extra “read the
+Skill” treatment instruction and are not clean estimates of Skill efficacy.
+The 2x target remains unmet. See the
 [pilot and research notes](jev-universal/docs/efficiency-research.md)
 for the full evidence and limits.
 
