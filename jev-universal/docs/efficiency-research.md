@@ -547,4 +547,23 @@ We reran the same Zed task from identical Git snapshots with Codex `gpt-5.5`, ba
 
 In a separate local command-output check using RTK v0.48.0, output bytes changed as follows: `pytest -q tests`, 908→18 (−98.0%); `ruff check src tests`, 1,518→372 (−75.5%); `git log -20`, 824→824; `rg --files`, 252→252; targeted `rg` search, 798→798. Across these selected commands: 4,300→2,264 bytes (−47.3%). These are command-output bytes, not full agent-session token counts, and the sample is small and deliberately includes both filtered and unchanged commands. A synthetic passing-test fixture also showed a caveat: RTK hid a warning while tests passed (496→17 bytes); on a failing fixture it retained the assertion marker, file, and nonzero exit status (723→265 bytes). Treat filtered success output as lossy and inspect raw output when warnings are relevant. Reproduce these observations with the ignored local harness before generalizing.
 
-Hook feasibility check: the official macOS ARM64 asset for RTK tag `dev-0.50.0-rc.444` had SHA-256 `57e799a7b74a81bbee13ce14e3292acba52bd36f56b0a29c1efe41c50fc09033` and was tested only from the ignored local harness. Despite the prerelease tag, the binary reports `rtk 0.48.0`. In an isolated fixture, `rtk init --codex` generated a project `PreToolUse` hook, and a valid Codex hook payload rewrote `pytest -q tests` to `rtk pytest -q tests`. This validates the binary's installer and protocol response, not end-to-end Codex execution or trust. The project's hook documentation notes project hooks require trust; it also warns that Codex classifies the rewritten `rtk ...` command, which can affect approval prompts and mutation detection. An end-to-end matched task pair remains necessary. Until then, neither these pilot numbers nor output-byte savings establish total-session token savings.
+Hook feasibility check: the official macOS ARM64 asset for RTK tag `dev-0.50.0-rc.444` had SHA-256 `57e799a7b74a81bbee13ce14e3292acba52bd36f56b0a29c1efe41c50fc09033`. Despite the prerelease tag, the binary reports `rtk 0.48.0`. Pilot 031 below verifies end-to-end execution in Codex. The project's hook documentation notes project hooks require trust; it also warns that Codex classifies the rewritten `rtk ...` command, which can affect approval prompts and mutation detection. These measurements still do not establish general total-session token savings.
+
+## Local pilot 031: Codex RTK hook on a warning-bearing test run
+
+This isolated microtask paired the exact same two-test Git fixture, `gpt-5.5`, prompt, command, workspace-write sandbox, and environment, with baseline first. The treatment added RTK `dev-0.50.0-rc.444` as a project `PreToolUse` hook. We bypassed hook trust only for this disposable fixture after inspecting the hook and verifying the official release asset checksum; no global Codex settings were changed. The JSONL proves the hook rewrote the requested `pytest -q tests` command to `rtk pytest -q tests`.
+
+| Measure | Baseline | RTK hook | Change |
+|---|---:|---:|---:|
+| Input tokens (cached subset) | 29,531 (23,296) | 29,538 (23,296) | +0.02% |
+| Output tokens | 144 | 111 | −22.9% |
+| Input + output tokens | 29,675 | 29,649 | −0.09% |
+| Tool actions | 1 | 1 | tied |
+| Wall time | 10.888 s | 11.462 s | +5.3% |
+| Test outcome | 2 passed, 1 warning | 2 passed, warning hidden | regression |
+| Command output bytes | 517 | 17 | −96.7% |
+| USD cost | unavailable (subscription) | unavailable (subscription) | — |
+
+RTK compressed the command output substantially, but this task saved only 26 total session tokens and took longer. More seriously, it removed the warning text and the agent reported “Warnings: none reported.” This is a concrete correctness regression, so the hook is not safe as a blanket test-output filter. The result is one deliberately tiny task pair, not a general efficacy estimate; repeat on representative development work only with warning preservation included as an acceptance criterion.
+
+Mitigation check: adding `[hooks]\nexclude_commands = ["pytest"]` to the isolated RTK config caused the Codex hook to leave `pytest -q tests` unchanged; the same test run then preserved the warning and the agent reported it correctly. In a direct hook protocol check, `git status --short` was still rewritten to `rtk git status --short`, while `uv run pytest -q tests` was excluded. Against the baseline row above, this safe-config run used 29,636 input (27,392 cached) plus 148 output tokens (29,784 total, +0.37%), took 11.257 s (+3.4%), and emitted the same 517 output bytes. This restores test-output fidelity but gives no saving on tests; any benefit from other filtered commands remains to be measured in a representative coding task. RTK documents `exclude_commands` in its [configuration guide](https://github.com/rtk-ai/rtk/blob/develop/docs/guide/getting-started/configuration.md).
