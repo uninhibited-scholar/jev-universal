@@ -20,12 +20,13 @@ No API key or login is needed.
 
 Use it selectively for unfamiliar multi-file features, bugs, or debugging
 tasks, especially when the relevant implementation is not yet clear. Skip it
-for localized changes with known source and acceptance checks. In the clean
-no-Skill comparison on a cross-file Zed config task, one order used 4.2% fewer
-tokens with the Skill and the reversed order used 5.6% more; pooled, the Skill
-used 0.3% more. This does not show reliable token savings. Results from other
-task types also vary. No stable multi-fold savings are established; the 2x
-target remains unmet. See the [pilot and research notes](jev-universal/docs/efficiency-research.md)
+for localized changes with known source and acceptance checks. After a clean
+no-Skill comparison showed no savings from the longer version, we replaced it
+with a 921-character compact Skill. In two order-balanced runs on the same
+cross-file Zed config feature, it used 22.9% and 5.2% fewer tokens; pooled
+usage was 15.2% lower, with one fewer tool action and 4.1% less elapsed time.
+This is one task family and does not establish general savings. The 2x target
+remains unmet. See the [pilot and research notes](jev-universal/docs/efficiency-research.md)
 for the full evidence and limits.
 
 The target remains at least 2x fewer total tokens, with 10x as a stretch goal.
