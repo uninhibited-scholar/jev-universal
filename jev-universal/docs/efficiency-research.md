@@ -732,7 +732,7 @@ These repeated the key-file task with the same prompt, model (`gpt-5.5`), clean 
 | 058 | candidate → baseline | 263,116 | 126,039 | −52.1% | 19 → 10 (−47.4%) | 81.115 → 55.766 s (−31.3%) |
 | 059 | baseline → candidate | 238,166 | 183,725 | −22.9% | 15 → 12 (−20.0%) | 82.625 → 70.994 s (−14.1%) |
 
-Cached input was 239,104/106,752 baseline/candidate in P058 and 203,904/163,200 in P059; output tokens were 3,186/2,072 and 2,842/2,925. Direction remained positive after order reversal, though the repeated run saved less than half. USD cost was unavailable.
+Cached input was 239,104/106,752 baseline/candidate in P058 and 203,904/163,200 in P059; output tokens were 3,186/2,072 and 2,842/2,925. Aggregate command output bytes fell 3.1% in P058 and 6.6% in P059. Direction remained positive after order reversal, though the repeated run saved less than half. USD cost was unavailable.
 
 ## Local pilots 060–061: strict known-path retrieval, all-pinned behavior
 
@@ -743,4 +743,4 @@ These tested the same revision and runner on the distinct all-pinned fast-path m
 | 060 | candidate → baseline | 299,187 | 359,837 | +20.3% | 19 → 21 (+10.5%) | 84.743 → 96.495 s (+13.9%) |
 | 061 | baseline → candidate | 166,004 | 212,154 | +27.8% | 15 → 12 (−20.0%) | 63.437 → 62.546 s (−1.4%) |
 
-Cached input was 274,688/325,632 baseline/candidate in P060 and 147,456/191,232 in P061; output tokens were 3,395/3,741 and 2,503/2,302. The candidate used more total tokens in both orders; this rule did not generalize to the all-pinned fix. USD cost was unavailable.
+Cached input was 274,688/325,632 baseline/candidate in P060 and 147,456/191,232 in P061; output tokens were 3,395/3,741 and 2,503/2,302. Aggregate command output bytes rose 12.4% in P060 and 8.8% in P061. The candidate used more total tokens in both orders; this rule did not generalize to the all-pinned fix. USD cost was unavailable.
