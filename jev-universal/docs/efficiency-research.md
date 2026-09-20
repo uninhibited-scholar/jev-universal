@@ -4,7 +4,7 @@ This document combines a design review with local pilot benchmark results. Commu
 
 ## Current evaluation checkpoint (2026-09-21)
 
-The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. P050–051 are the first order-balanced, quality-valid repeat for one task and one Skill revision: they saved 21.8% and 46.1%. This is promising but not yet generalizable across task types, and neither run reached 50% savings. Earlier evidence remains mixed: from-start pairs often used more tokens; RTK and Pluck pilots did not pass the efficacy gate; and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. P050–051 are an order-balanced, quality-valid repeat on a key-file/configuration task, saving 21.8% and 46.1%. But on a second, all-pinned metadata task with the same Skill revision, candidates used 28.8% and 10.1% more tokens in P052–053. Thus the savings do not yet generalize across task types. Earlier evidence remains mixed: RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
 
 An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
 
@@ -683,3 +683,14 @@ These used the same key-file task, clean source snapshot, model, prompt, and Ski
 | 051 | candidate → baseline | 442,593 | 238,612 | −46.1% | 17 → 14 | 102.107 → 90.372 s (−11.5%) |
 
 Cached input/output were 410,368/3,960 baseline and 311,168/4,270 candidate in P050; 407,936/3,587 baseline and 209,664/3,542 candidate in P051. Shell output bytes changed +48.4% in P050 and −18.0% in P051. Subscription billing did not provide per-run USD cost. P050 and P051 are not evidence for a 2x result or for other development task classes.
+
+## Local pilots 052–053: all-pinned response consistency
+
+This second task type fixed a real output-shape mismatch: the all-pinned `jev_select_context` fast path made no upstream request but omitted evaluation metadata returned by the normal path. The shared prompt, model (`gpt-5.5`), clean source commit (`448937d`), environment and test commands were held constant; P052 ran candidate first and P053 reversed the order. Both arms added a new focused test, left existing tests unchanged, passed all 41 tests and passed targeted Ruff. Independent full-suite runs were used because Codex's nested sandbox could not bind a loopback socket.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Actions (baseline → candidate) | Time (baseline → candidate) |
+|---|---|---:|---:|---:|---:|---:|
+| 052 | candidate → baseline | 236,241 | 304,307 | +28.8% | 17 → 19 | 85.463 → 92.660 s (+8.4%) |
+| 053 | baseline → candidate | 196,779 | 216,593 | +10.1% | 18 → 17 | 78.363 → 75.712 s (−3.4%) |
+
+Cached input was 212,096/274,304 baseline/candidate in P052 and 173,440/194,304 in P053; output tokens were 3,520/3,787 and 2,997/2,957. USD cost was unavailable. Traces show the Skill candidate still inventoried/scanned tests and repeated broad searches after targeted paths were known; the new working-set rule narrows those behaviors. That revision is not yet measured. P052–053 are quality-valid but are counterevidence to general token savings, not successful efficacy results.
