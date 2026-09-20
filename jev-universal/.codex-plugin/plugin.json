@@ -1,19 +1,19 @@
 {
   "name": "jev-universal",
   "version": "0.2.0",
-  "description": "Jev classification, scoring, checks and context selection through MCP",
+  "description": "Jev-inspired efficient development Skill with an optional TypeSafe MCP adapter",
   "author": {
     "name": "Local developer"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "Jev Universal",
-    "shortDescription": "Fast structured decisions with Jev",
-    "longDescription": "Jev classification, scoring, checks and context selection through MCP",
+    "shortDescription": "Efficient, evidence-led development",
+    "longDescription": "A portable development Skill for focused exploration, fewer retries, and right-sized verification. No TypeSafe login or API required; the API adapter is optional.",
     "developerName": "Local developer",
     "category": "Productivity",
     "capabilities": [],
-    "defaultPrompt": "Help me use Jev Universal."
+    "defaultPrompt": "Apply the Jev-inspired efficient development workflow to this task."
   },
   "mcpServers": "./.mcp.json"
 }

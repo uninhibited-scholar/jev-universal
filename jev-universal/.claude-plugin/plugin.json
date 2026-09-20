@@ -1,5 +1,5 @@
 {
   "name": "jev-universal",
   "version": "0.2.0",
-  "description": "Jev classification, scoring, checks and context selection through MCP"
+  "description": "Jev-inspired efficient development Skill; optional TypeSafe MCP adapter"
 }

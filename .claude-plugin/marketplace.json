@@ -1,5 +1,5 @@
 {
   "name": "jev-universal",
   "owner": {"name": "uninhibited-scholar"},
-  "plugins": [{"name": "jev-universal", "source": "./jev-universal", "description": "Jev structured decision tools over MCP", "version": "0.2.0"}]
+  "plugins": [{"name": "jev-universal", "source": "./jev-universal", "description": "Jev-inspired efficient development Skill; optional TypeSafe MCP adapter", "version": "0.2.0"}]
 }

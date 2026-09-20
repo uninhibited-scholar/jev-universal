@@ -1,86 +1,40 @@
-# Jev Universal
+# Jev-inspired Efficient Development Skill
 
-**Give your AI assistant fast, structured Jev decisions through one MCP server.**
+**A portable coding workflow for reducing wasted exploration and retries. No TypeSafe account, API key, server, or plugin service required.**
 
-[中文说明](jev-universal/docs/README.zh-CN.md) · [Setup](jev-universal/README.md) · [ChatGPT & hosting](jev-universal/docs/hosting.md) · [Research](jev-universal/docs/research.md) · [Security](SECURITY.md)
+[中文说明](jev-universal/docs/README.zh-CN.md) · [Skill](jev-universal/skills/jev-universal/SKILL.md) · [Research notes](jev-universal/docs/research.md) · [Optional TypeSafe MCP adapter](jev-universal/README.md)
 
-An independent integration for **Claude / Claude Code, ChatGPT, Kimi Code (K3),
-ZCode (GLM-5.3), and Codex**. Your existing model stays in charge; Jev supplies
-classification, rubric scores, assertion checks and conservative context selection.
+Jev is TypeSafe AI's decision model. This repository's default offering is a
+prompt-level development Skill that combines common context-efficiency practices
+with Jev's public idea of breaking work into narrow judgments and explicit
+decision rules. It runs with the assistant you already use, including Claude,
+ChatGPT, Kimi Code, and ZCode. It is **not Jev**, does not reproduce its trained
+model, and does not guarantee Jev's performance or any fixed token savings.
 
-> **v0.2.0 preview:** local MCP, authentication and packaging tests pass. Real
-> TypeSafe inference requires your own API key. See the [validation record](jev-universal/docs/validation.md)
-> for the exact client tests and remaining limits. This project does not provide a
-> shared hosted service or free TypeSafe credits, and is not an official vendor plugin.
+## Use the Skill
 
-## Install from GitHub
+Install or copy the folder `jev-universal/skills/jev-universal/` into the skills
+directory supported by your AI client, then start a new conversation. Or copy
+the `SKILL.md` instructions into the assistant's project/user instructions.
+No API key or login is needed.
 
-Requires [uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.11+.
+Use it selectively for repository-scale debugging, noisy command output, or
+repeated diagnosis. Skip it for small changes with obvious files and checks:
+our first paired pilot found that this task paid more instruction overhead than
+it saved. See the [pilot and research notes](jev-universal/docs/efficiency-research.md).
 
-```sh
-git clone https://github.com/uninhibited-scholar/jev-universal.git
-cd jev-universal
-uv sync --project jev-universal --locked --no-dev --no-editable
-uv run --project jev-universal --no-editable jev-universal probe
-```
+## Optional: TypeSafe API adapter
 
-The probe lists four tools and checks an exact pinned-content roundtrip **without
-calling the paid TypeSafe API**. Set `TYPESAFE_API_KEY` in the server environment,
-or use `--env-file` with a private file outside this repository:
+The repository also retains an MCP adapter for people who already have TypeSafe
+API access. TypeSafe currently gates access to Jev behind its waitlist, so this
+adapter is optional and is not needed to use the Skill. See the [adapter setup](jev-universal/README.md)
+and [client validation record](jev-universal/docs/validation.md). No shared API
+key or hosted access is provided.
 
-```sh
-uv run --project jev-universal --no-editable jev-universal --env-file /absolute/path/to/private.env doctor --live
-uv run --project jev-universal --no-editable jev-universal --env-file /absolute/path/to/private.env config --client claude
-```
+The workflow is inspired by TypeSafe's [public description of Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev)
+and its [structured workflow evaluations](https://evals.typesafe.ai/). The
+workflow's utility still needs independent measurement in the intended use
+cases; TypeSafe's reported benchmarks describe its own model and evaluations.
 
-`doctor --live` sends **one paid request** testing all three Jev primitives. `config`
-prints JSON using your installed Python's path; merge it into your client's settings.
-Use `--client kimi`, `zcode`, `zcode-native` or `codex` for the other formats. Never
-redirect over an existing configuration file: preserve other servers.
-
-| Client | Connection |
-|---|---|
-| Claude Code | Merge generated JSON into project `.mcp.json`; approve the project server |
-| Claude Desktop | Merge generated JSON into the desktop MCP configuration |
-| Kimi Code / K3 | Merge into `.kimi-code/mcp.json`; trust that project on first interactive launch |
-| ZCode / GLM-5.3 | Settings → MCP Servers → Full configuration; import generated JSON |
-| Codex | Merge generated TOML from `--client codex` into MCP settings |
-| ChatGPT | Run HTTP behind a Secure MCP Tunnel or an OAuth-protected HTTPS endpoint; [instructions](jev-universal/docs/hosting.md) |
-
-**Claude Code plugin install** (requires `uvx` on PATH and the API key in its environment):
-
-```sh
-claude plugin marketplace add uninhibited-scholar/jev-universal
-claude plugin install jev-universal@jev-universal
-```
-
-The bundled MCP config fetches the pinned `v0.2.0` Git tag. No PyPI publication is
-assumed. For a checkout or a private env file, use the generated config instead.
-
-## Tools
-
-| Tool | What it does |
-|---|---|
-| `jev_evaluate` | Batch independent Choice, Score and Noul questions |
-| `jev_route` | Recommend one of your named workflow/model routes; never invokes it |
-| `jev_check` | Check assertions against supplied evidence; uncertainty goes to review |
-| `jev_select_context` | Keep exact original chunks; omit only confidently irrelevant ones |
-
-Example request to your assistant:
-
-> Use Jev to check whether this implementation has evidence for each acceptance
-> criterion. Return uncertain checks for my review. Do not claim that tests passed
-> unless we actually ran them.
-
-Context chunks require an explicit `pinned` boolean. Pin instructions, commitments,
-critical evidence and unresolved errors. Keep originals so later steps can recover
-omitted material. Jev judgments do not grant permissions or establish correctness.
-
-## Development
-
-See [CONTRIBUTING](CONTRIBUTING.md). CI tests Linux, macOS and Windows on Python
-3.11 and 3.13. The optional live workflow runs only when manually dispatched with
-a configured protected environment secret.
-
-MIT licensed. The license covers this integration; TypeSafe API usage is subject
-to TypeSafe's own terms and billing.
+MIT licensed. This project's license does not grant access to TypeSafe's model
+or services.
