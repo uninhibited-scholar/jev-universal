@@ -17,7 +17,8 @@
     "088",
     "089",
     "090",
-    "091"
+    "091",
+    "092"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -1666,6 +1667,68 @@
       "Pooled candidate totals are -12.6%, but include the Skill-A run that did not read the Skill and should not be presented as causal Skill efficacy.",
       "The system Python/MCP mismatch caused the agents initial full-test runs to fail collection; common locked Python 3.13 reruns proved all four full suites passed.",
       "USD cost unavailable on Codex subscription traces."
+    ]
+  },
+  "follow_up_092_home_key_path_replication": {
+    "source_commit": "1e9f6043ec16d2c982a3b299608655ea69f0f7d5",
+    "model": "gpt-5.5",
+    "task": "TYPESAFE_API_KEY_FILE currently reads Path(os.environ[...]) without expanding ~, unlike the CLI --env-file option. Make key-file configuration accept a leading home-directory shorthand such as ~/private keys/typesafe.key. Expand only the user-home prefix; do not interpolate $VARS or change environment-variable precedence. Add tests using a temporary HOME and a path containing spaces, preserve the existing env-key-over-file precedence and generic read-error behavior, and document the supported path form in English and Chinese. Do not call the TypeSafe service or use real credentials. Use any applicable project Skill if one is present. Do not use uv or access the network. From jev-universal/, run focused tests with PYTHONPATH=src /tmp/jev-efficiency-venv-20260921/bin/python -m pytest tests/test_cli.py -q, run the full suite with PYTHONPATH=src /tmp/jev-efficiency-venv-20260921/bin/python -m pytest -q, and run lint with /tmp/jev-efficiency-venv-20260921/bin/ruff check --ignore I001 src/jev_universal/core.py tests/test_cli.py. Preserve all existing test functions and review the focused diff.",
+    "prompt_sha256": "aaa7081197107e31c8c31e030c2d9d215da9de392c0bcf76e0df910a99e613e4",
+    "skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "control": "Two clean clones at the same commit, byte-identical prompt; only treatment contained the Skill. Order baseline then Skill. Unlike P091, the prompt explicitly named the shared Python/Ruff paths and instructed both arms to use an applicable project Skill if present.",
+    "runs": [
+      {
+        "pair": "092-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 266917,
+        "cached_input_tokens_subset": 219648,
+        "output_tokens": 3463,
+        "total_tokens": 270380,
+        "tool_actions": 18,
+        "elapsed_seconds": 237.214,
+        "exit_code": 0,
+        "focused_cli_tests": "14 passed",
+        "full_tests": "62 passed; 1 failed on sandbox localhost bind PermissionError",
+        "targeted_ruff_ignore_I001": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "092-A",
+        "order": 2,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 321057,
+        "cached_input_tokens_subset": 277760,
+        "output_tokens": 3837,
+        "total_tokens": 324894,
+        "tool_actions": 21,
+        "elapsed_seconds": 101.151,
+        "exit_code": 0,
+        "focused_cli_tests": "15 passed",
+        "full_tests": "63 passed; 1 failed on sandbox localhost bind PermissionError",
+        "targeted_ruff_ignore_I001": "passed",
+        "cost_usd": null
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 270380,
+      "skill_total_tokens": 324894,
+      "skill_token_change_percent": 20.2,
+      "baseline_tool_actions": 18,
+      "skill_tool_actions": 21,
+      "baseline_elapsed_seconds": 237.214,
+      "skill_elapsed_seconds": 101.151,
+      "matched_pair_token_change_percent": 20.2,
+      "cost_usd": null
+    },
+    "quality_audit": "The 7 existing CLI test functions remained AST-equivalent. Focused tests and Ruff passed independently in both arms. Both full suites had the same environment-only failure: tests/test_http.py could not bind localhost in the sandbox (baseline: 62 passed/1 failed; Skill: 63 passed/1 failed). Implementation expands only a leading tilde, preserving literal shell variables, precedence, and generic read errors.",
+    "limitations": [
+      "This order-reversed task-family replicate disagrees with P091: P091’s only confirmed Skill-loaded pair was -17.0% tokens; P092’s confirmed Skill-loaded pair was +20.2%.",
+      "Run times differ greatly despite similar action counts; do not interpret wall time as a stable Skill effect.",
+      "The full-suite single failure is the sandbox localhost bind PermissionError; all other tests passed.",
+      "Codex subscription usage does not expose USD cost."
     ]
   }
 }
