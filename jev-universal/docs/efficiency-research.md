@@ -1055,3 +1055,26 @@ outer repository, and their 739b583 code already contained the requested Go fix.
 The runner now requires each input to be a clean Git worktree root at the stated
 commit and checks Skill hashes before launching a model. No token result from that
 rerun is included as a Skill effect estimate.
+
+### Local pilot 098: failure-aware Skill wording, two order-balanced pairs
+
+P098 tested a safer revision of the concise-check instruction on the same Go output
+task, prompt SHA-256 `1df707666bdc738498814071db438e55bd4475dd7ff00f55071bd50b84d34a50`,
+source commit `b49a52faf67ec29eb22caaeff56002678ef13252`, and Codex CLI 0.143.0.
+Each arm loaded its verified Skill; the runner checked clean worktree roots and
+matching HEADs before both arms. Order was baseline → candidate, then candidate →
+baseline on newly recreated worktrees.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Cached input (baseline/candidate) | Tool actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 098-A | baseline → candidate | 128,020 | 123,453 | −3.6% | 112,256 / 105,088 | 9 / 10 | 44.133 / 52.568 s |
+| 098-B | candidate → baseline | 104,514 | 124,624 | +19.2% | 86,272 / 109,184 | 8 / 10 | 44.043 / 45.532 s |
+
+Pooled candidate usage was 248,077 versus 232,534 baseline tokens (+6.7%), 20 versus
+17 tool actions, and 98.100 versus 88.176 seconds. The direction reversed with run
+order, so these repetitions show no reliable token saving. All four arms passed the
+requested focused tests (11 each) and Ruff. A broader output probe found both
+implementations still compact build-failure and bare `FAIL` summaries; this was a
+shared safety limitation, not a measured candidate-only regression. Do not promote
+the candidate or count P098 as a quality-preserving efficiency win. Full per-run
+usage and caveats are in [skill-benchmarks.json](skill-benchmarks.json).

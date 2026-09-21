@@ -22,7 +22,8 @@
     "093",
     "094",
     "095",
-    "096"
+    "096",
+    "098"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -1979,6 +1980,75 @@
       "Quality gate failed on a valid bare Go FAIL summary; not a quality-preserving efficiency estimate.",
       "One exposure-controlled pair only.",
       "Codex subscription traces expose no USD cost."
+    ]
+  },
+  "follow_up_098_skill_revision_order_balanced": {
+    "source_commit": "b49a52faf67ec29eb22caaeff56002678ef13252",
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "task": "Fix Go test output safety: preserve large failing summary output ending in FAIL\\texample/module/pkg\\t0.01s while allowing successful ok summaries to compact; add separate regressions and run focused pytest and Ruff.",
+    "prompt_sha256": "1df707666bdc738498814071db438e55bd4475dd7ff00f55071bd50b84d34a50",
+    "baseline_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "candidate_skill_sha256": "57733928febe40cca675bd620e46a85430bdf25300a111b139fecfc01cf2412a",
+    "controls": "Two order-balanced pairs on clean Git worktrees at the same source commit with byte-identical prompts; runner verified roots, HEADs, outside-Skill cleanliness, Skill hashes, and usage traces. Candidate revision prefers concise successful-check output and asks to preserve failure status, inspect first actionable diagnostic, and avoid unchanged reruns.",
+    "runs": [
+      {
+        "pair": "098-A",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 128020,
+        "candidate_total_tokens": 123453,
+        "candidate_token_change_percent": -3.6,
+        "baseline_cached_input_tokens_subset": 112256,
+        "candidate_cached_input_tokens_subset": 105088,
+        "baseline_tool_actions": 9,
+        "candidate_tool_actions": 10,
+        "baseline_elapsed_seconds": 44.133,
+        "candidate_elapsed_seconds": 52.568,
+        "both_exit_code": 0,
+        "focused_tests": "11 passed in both arms",
+        "ruff": "passed in both arms"
+      },
+      {
+        "pair": "098-B",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 104514,
+        "candidate_total_tokens": 124624,
+        "candidate_token_change_percent": 19.2,
+        "baseline_cached_input_tokens_subset": 86272,
+        "candidate_cached_input_tokens_subset": 109184,
+        "baseline_tool_actions": 8,
+        "candidate_tool_actions": 10,
+        "baseline_elapsed_seconds": 44.043,
+        "candidate_elapsed_seconds": 45.532,
+        "both_exit_code": 0,
+        "focused_tests": "11 passed in both arms",
+        "ruff": "passed in both arms"
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 232534,
+      "candidate_total_tokens": 248077,
+      "candidate_token_change_percent": 6.7,
+      "baseline_cached_input_tokens_subset": 198528,
+      "candidate_cached_input_tokens_subset": 214272,
+      "baseline_tool_actions": 17,
+      "candidate_tool_actions": 20,
+      "baseline_elapsed_seconds": 88.176,
+      "candidate_elapsed_seconds": 98.1,
+      "cost_usd": null,
+      "matched_pair_token_change_percent": null
+    },
+    "quality_audit": "All four arms passed the requested Go package-summary/success checks, 11 focused tests, and Ruff. Probe-only package failure, build-failure, bare FAIL, and success cases showed no candidate regression relative to each paired baseline, but both implementations compacted build-failure and bare FAIL output. The broader failure-preservation gate is therefore incomplete; do not promote this Skill revision or count token changes as a quality-preserving win.",
+    "status": "Order-balanced and exposure-controlled; pooled candidate used 6.7% more tokens, 17.6% more actions, and 11.3% more elapsed time. No efficiency gain; safety probe also exposed shared limitations.",
+    "limitations": [
+      "Only one development task family, repeated twice.",
+      "High order/run variance reversed the token direction.",
+      "Neither Skill revision demonstrated a repeatable token saving.",
+      "Codex subscription traces expose no per-run USD cost."
+    ],
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p098-order-a",
+      "/tmp/jev-p098-order-b"
     ]
   }
 }
