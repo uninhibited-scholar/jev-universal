@@ -18,7 +18,8 @@
     "089",
     "090",
     "091",
-    "092"
+    "092",
+    "093"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -1729,6 +1730,69 @@
       "Run times differ greatly despite similar action counts; do not interpret wall time as a stable Skill effect.",
       "The full-suite single failure is the sandbox localhost bind PermissionError; all other tests passed.",
       "Codex subscription usage does not expose USD cost."
+    ]
+  },
+  "follow_up_093_pinned_evaluation_metadata": {
+    "source_commit": "c6d3a4b3146abd78693d23eb260f53ff02eea4fb",
+    "model": "gpt-5.5",
+    "task": "The all-pinned fast path of jev_select_context should avoid calling the evaluator, but its returned evaluation object must have the same metadata contract as evaluate(). Return answers: {}, review_required: [], the supplied threshold, advisory_only: true, and the existing noul_review_policy string, while preserving kept chunks and no-network behavior. Acceptance: add one new test function to tests/test_core.py checking those fields with a non-default threshold and making evaluate fail if called. Do not modify any existing test function or assertions. Keep implementation minimal. Do not contact TypeSafe or access network/credentials. Use any applicable project Skill if present. Run the full suite and Ruff with the explicitly named shared Python 3.13 environment.",
+    "prompt_sha256": "bebda339d5e569ebdc9cfef06cb273e86ba4f1d6f0cc62b33d77d3cf490af5dc",
+    "skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "control": "Two clean clones at source commit c6d3a4b3146abd78693d23eb260f53ff02eea4fb, byte-identical task; only Skill arm had .agents/skills/jev-dev-efficient/SKILL.md. Run order Skill → baseline. Both arms used the same absolute Python and Ruff executables.",
+    "runs": [
+      {
+        "pair": "093-A",
+        "order": 1,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 184444,
+        "cached_input_tokens_subset": 166272,
+        "output_tokens": 2406,
+        "total_tokens": 186850,
+        "tool_actions": 13,
+        "elapsed_seconds": 70.472,
+        "exit_code": 0,
+        "focused_tests": "19 passed",
+        "full_tests": "61 passed; 1 failed on sandbox localhost bind PermissionError",
+        "targeted_ruff": "passed after import-order cleanup",
+        "cost_usd": null
+      },
+      {
+        "pair": "093-A",
+        "order": 2,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 227565,
+        "cached_input_tokens_subset": 200832,
+        "output_tokens": 2718,
+        "total_tokens": 230283,
+        "tool_actions": 17,
+        "elapsed_seconds": 74.603,
+        "exit_code": 0,
+        "focused_tests": "19 passed",
+        "full_tests": "61 passed; 1 failed on sandbox localhost bind PermissionError",
+        "targeted_ruff": "passed after import-order cleanup",
+        "cost_usd": null
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 230283,
+      "skill_total_tokens": 186850,
+      "skill_token_change_percent": -18.9,
+      "baseline_cached_input_tokens_subset": 200832,
+      "skill_cached_input_tokens_subset": 166272,
+      "baseline_tool_actions": 17,
+      "skill_tool_actions": 13,
+      "baseline_elapsed_seconds": 74.603,
+      "skill_elapsed_seconds": 70.472,
+      "matched_pair_token_change_percent": -18.9,
+      "cost_usd": null
+    },
+    "quality_audit": "Both patches implemented the same all-pinned metadata fields and each added exactly one new test function that ensures evaluate is not called. All 16 pre-existing test functions remained AST-equivalent in both arms. Both focused core suites passed 19 tests. Both full suites had the same sandbox-only localhost binding PermissionError (61 passed); targeted Ruff passed after each arm corrected the pre-existing I001 import ordering exposed by its new test import.",
+    "limitations": [
+      "One paired repetition only; not evidence of stable or >=2x savings.",
+      "Full suite has a common sandbox network-bind failure in tests/test_http.py::test_http; all remaining tests passed.",
+      "Per-run USD cost unavailable on subscription traces."
     ]
   }
 }
