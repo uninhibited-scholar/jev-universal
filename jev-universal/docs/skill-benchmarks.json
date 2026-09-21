@@ -19,7 +19,8 @@
     "090",
     "091",
     "092",
-    "093"
+    "093",
+    "094"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -1794,5 +1795,67 @@
       "Full suite has a common sandbox network-bind failure in tests/test_http.py::test_http; all remaining tests passed.",
       "Per-run USD cost unavailable on subscription traces."
     ]
+  },
+  "follow_up_094_metadata_contract_replication": {
+    "source_commit": "c6d3a4b3146abd78693d23eb260f53ff02eea4fb",
+    "model": "gpt-5.5",
+    "task": "Check the serialized request size boundary in `src/jev_universal/core.py`: `evaluate()` must accept a request whose encoded JSON body is exactly `MAX_REQUEST_BYTES` and reject one byte over before invoking the transport. Use local tests only: no key, network, or TypeSafe call. Preserve existing tests and behavior; add separate regression coverage only if absent. Run focused core tests and Ruff using `/tmp/jev-efficiency-venv-20260921/bin/python` and `/tmp/jev-efficiency-venv-20260921/bin/ruff` from `jev-universal/`.",
+    "prompt_sha256": "073533a3dc920885b79278eace4c5fb2839f51e159e8f8a093824d5b920b529f",
+    "skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "control": "Two fresh clones at source commit c6d3a4b3146abd78693d23eb260f53ff02eea4fb; byte-identical task prompt; only the treatment clone has .agents/skills/jev-dev-efficient/SKILL.md. Order baseline then Skill, reversing P093.",
+    "runs": [
+      {
+        "pair": "094-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 157671,
+        "cached_input_tokens_subset": 133120,
+        "output_tokens": 2821,
+        "total_tokens": 160492,
+        "tool_actions": 18,
+        "elapsed_seconds": 75.279,
+        "exit_code": 0,
+        "focused_tests": "20 passed",
+        "changed_file_ruff": "passed",
+        "full_repo_ruff": "failed on three unrelated existing import-order findings",
+        "cost_usd": null
+      },
+      {
+        "pair": "094-A",
+        "order": 2,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 167898,
+        "cached_input_tokens_subset": 151936,
+        "output_tokens": 2320,
+        "total_tokens": 170218,
+        "tool_actions": 15,
+        "elapsed_seconds": 61.696,
+        "exit_code": 0,
+        "focused_tests": "20 passed",
+        "changed_file_ruff": "passed",
+        "full_repo_ruff": "failed on the same three unrelated existing import-order findings",
+        "cost_usd": null
+      }
+    ],
+    "status": "Completed with matched paired data. Treatment token usage was higher; quality equivalence passed.",
+    "limitations": [
+      "One quality-equivalent pair only; Skill used 6.1% more tokens, so this task showed no token savings.",
+      "The source behavior was already correct; the task primarily added regression coverage.",
+      "Codex traces expose no USD cost."
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 160492,
+      "skill_total_tokens": 170218,
+      "skill_token_change_percent": 6.1,
+      "baseline_tool_actions": 18,
+      "skill_tool_actions": 15,
+      "baseline_elapsed_seconds": 75.279,
+      "skill_elapsed_seconds": 61.696,
+      "matched_pair_token_change_percent": 6.1,
+      "cost_usd": null
+    },
+    "quality_audit": "Both arms added the same two boundary regression tests, with tests confirming exact MAX_REQUEST_BYTES is sent to a local MockTransport and MAX_REQUEST_BYTES+1 fails before transport. All pre-existing test functions remained AST-equivalent; the exact-boundary test uses a slightly different name across arms but asserts the same behavior. Both core suites passed 20 tests, changed-file Ruff passed, and full-repo Ruff reported the same three unrelated existing import-sort findings."
   }
 }

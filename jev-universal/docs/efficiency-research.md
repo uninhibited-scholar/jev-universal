@@ -1008,3 +1008,14 @@ P093 used two clean clones of source commit `c6d3a4b3146abd78693d23eb260f53ff02e
 | 093-A | Skill → baseline | 230,283 | 186,850 | −18.9% | 200,832 / 166,272 | 17 / 13 | 74.603 / 70.472 s |
 
 Both arms produced equivalent implementations. Each added exactly one test function asserting the metadata fields and that `evaluate` is never called; all 16 old test functions remained AST-equivalent. Both focused core suites passed (19 tests). Full suites each passed 61 tests and hit the same sandbox-only `PermissionError` in `tests/test_http.py::test_http` while binding localhost. Both targeted Ruff checks passed after adding the new test required rearranging a pre-existing unsorted import block. USD cost is unavailable. This is a quality-preserving positive single pair, not proof of repeatable or 2x savings. Full measurements are in [skill-benchmarks.json](skill-benchmarks.json).
+
+
+## Local pilot 094: serialized request-size boundary
+
+P094 used two fresh clones of source commit `c6d3a4b3146abd78693d23eb260f53ff02eea4fb` and the same prompt (SHA-256 `073533a3dc920885b79278eace4c5fb2839f51e159e8f8a093824d5b920b529f`). Only treatment had the project Skill; order was baseline → Skill. The task added local regression coverage for accepting an encoded request exactly at `MAX_REQUEST_BYTES` and rejecting one byte over before transport. Existing implementation already enforced the correct boundary.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 094-A | baseline → Skill | 160,492 | 170,218 | +6.1% | 133,120 / 151,936 | 18 / 15 | 75.279 / 61.696 s |
+
+Both arms added equivalent exact-boundary and one-byte-over tests and passed all 20 focused core tests. All pre-existing test functions were AST-equivalent. Changed-file Ruff passed in both; full-repository Ruff found the same three unrelated import-order issues. Although the Skill arm used fewer tool actions and less elapsed time, it used 6.1% more tokens. This is one quality-equivalent pair with no token savings, not evidence of efficiency gain. Cost in USD is unavailable. See [skill-benchmarks.json](skill-benchmarks.json) for full details.
