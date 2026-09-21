@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -84,7 +85,8 @@ def test_run_arm_records_usage_hashes_and_elapsed_time(tmp_path, monkeypatch):
 
     assert result["skill_present"] is True
     assert result["skill_injected_into_prompt"] is True
-    assert result["skill_injected_sha256"] == run_skill_pair.sha256(skill)
+    assert result["skill_sha256"] == run_skill_pair.sha256(skill)
+    assert result["skill_injected_sha256"] == hashlib.sha256(b"Use focused evidence.\n").hexdigest()
     assert "Use focused evidence." in captured["prompt"]
     assert "Fix the regression." in captured["prompt"]
     assert result["workspace_commit"] == "abc123"
