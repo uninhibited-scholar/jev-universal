@@ -1038,3 +1038,20 @@ P096 repeated the task with a fresh prompt that explicitly required both arms to
 A post-run safety probe exposed a quality failure: for a large `go test` output ending in the valid final line `FAIL` (without package/time fields), baseline preserved the output but the revised Skill candidate compacted it. The [official Go command documentation](https://pkg.go.dev/cmd/go#hdr-Test_packages) describes this final `FAIL` status for package-list mode. Therefore P096 is not a quality-preserving efficiency win; its token difference is descriptive only. We did not promote the Skill revision. The production hook now has a tested Go-failure guard for package summaries, build-failure summaries, and bare `FAIL`, while preserving compaction of successful `ok` output. Details and all per-run fields are in [skill-benchmarks.json](skill-benchmarks.json).
 
 The current result does not justify changing the published Skill. Continue evaluating concise-success/failure-directed guidance across distinct development tasks, with the quality gate covering nearby valid failure formats before comparing tokens.
+# Evaluation harness provenance
+
+The public `scripts/run_skill_pair.py` runner adopts practical controls used by
+[`agent-skill-eval`](https://github.com/tardigrde/agent-skill-eval): pin the model
+and task, verify the skill invocation artifact, retain token/cache/action/time
+measurements, and evaluate code state separately from usage. It deliberately stays
+Codex-CLI-native and does not import that project's harness. It also records the
+arm order so studies can reverse it across repetitions. See the package README for
+the runnable protocol. This makes measurements auditable; it does not itself show
+that the Skill saves tokens.
+
+An attempted reverse-order rerun against earlier copied snapshots was rejected as
+evidence: those directories lacked Git metadata, so `git rev-parse` resolved the
+outer repository, and their 739b583 code already contained the requested Go fix.
+The runner now requires each input to be a clean Git worktree root at the stated
+commit and checks Skill hashes before launching a model. No token result from that
+rerun is included as a Skill effect estimate.

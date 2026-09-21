@@ -2,6 +2,42 @@
 
 Cross-client Jev tools over MCP. [Repository overview](../README.md) · [中文](docs/README.zh-CN.md)
 
+## Reproducible development-skill comparisons
+
+`scripts/run_skill_pair.py` runs one exact prompt against two frozen Git workspaces
+with a pinned Codex model and caller-selected order. Both workspaces must have the
+same `HEAD`, be separate real Git worktree roots, and have no changes beyond the
+arm-specific Skill file; install that Skill before the run (the baseline may omit
+it). Set `--skill-path` if the Skill is outside the
+workspace root, and pass the expected per-arm Skill hashes to make exposure
+verifiable. Run once as `baseline-first` and once as
+`candidate-first` for an order-balanced pair. The runner writes raw local traces,
+stderr, and a JSON summary with prompt/Skill hashes, token counts, cached input,
+tool actions, elapsed time, and exit status. It does not judge patch quality: check
+the same tests and behavior in both arms separately. Raw traces may contain private
+prompt or repository data; review before sharing.
+
+Example:
+
+```sh
+python scripts/run_skill_pair.py \
+  --baseline /path/to/baseline-worktree \
+  --candidate /path/to/candidate-worktree \
+  --prompt /path/to/task.txt \
+  --commit <shared-git-commit> --model gpt-5.5 \
+  --skill-path .agents/skills/jev-dev-efficient/SKILL.md \
+  --baseline-skill-sha256 <baseline-hash> \
+  --candidate-skill-sha256 <candidate-hash> \
+  --order baseline-first --out /path/to/results-a
+```
+
+The agent can modify its workspace. For the reverse-order run, recreate clean
+worktrees at the same commit and reinstall the same Skill files, then use
+`--order candidate-first` and a new empty output directory. Rotate which task gets
+each order across a multi-task study.
+Use the reported `total_tokens`, not cache-adjusted estimates, and report the
+cached-input subset separately. Token savings alone do not establish equal quality.
+
 ## Install
 
 From this package directory (the inner `jev-universal` directory):
