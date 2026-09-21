@@ -5,7 +5,7 @@ Cross-client Jev tools over MCP. [Repository overview](../README.md) · [中文]
 ## Reproducible development-skill comparisons
 
 `scripts/run_skill_pair.py` runs one exact prompt against two frozen Git workspaces
-with a pinned Codex model and caller-selected order. Both workspaces must have the
+with a pinned Codex model, reasoning effort, response verbosity, and caller-selected order. Both workspaces must have the
 same `HEAD`, be separate real Git worktree roots, and have no changes beyond the
 arm-specific Skill file; install that Skill before the run (the baseline may omit
 it). Set `--skill-path` if the Skill is outside the
@@ -13,7 +13,9 @@ workspace root, and pass the expected per-arm Skill hashes to make exposure
 verifiable. Run once as `baseline-first` and once as
 `candidate-first` for an order-balanced pair. The runner writes raw local traces,
 stderr, and a JSON summary with prompt/Skill hashes, token counts, cached input,
-tool actions, elapsed time, and exit status. It does not judge patch quality: check
+tool actions, elapsed time, exit status, reasoning/verbosity settings, and whether
+the trace contains a successful command output with the full Skill text. It does
+not judge patch quality: check
 the same tests and behavior in both arms separately. Raw traces may contain private
 prompt or repository data; review before sharing.
 
@@ -25,6 +27,7 @@ python scripts/run_skill_pair.py \
   --candidate /path/to/candidate-worktree \
   --prompt /path/to/task.txt \
   --commit <shared-git-commit> --model gpt-5.5 \
+  --reasoning-effort medium --verbosity medium \
   --skill-path .agents/skills/jev-dev-efficient/SKILL.md \
   --baseline-skill-sha256 <baseline-hash> \
   --candidate-skill-sha256 <candidate-hash> \

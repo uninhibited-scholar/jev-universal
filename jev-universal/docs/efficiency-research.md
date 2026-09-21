@@ -13,11 +13,13 @@ An instrumentation audit also found that pilots 019–021 had placed the candida
 These projects are useful comparisons and design hypotheses, not independent proof for this Skill. Their numbers use different harnesses, models, metrics, and task sets; do not pool them with the local P-series.
 
 - [Quartermaster campaign](https://github.com/narehart/quartermaster/blob/main/bench/docs/CAMPAIGN_WRITEUP.md) reports a preregistered, cache-priced SWE-bench Live study. Its authors report that context removal/front-loading failed to reduce cost across 14 techniques, while a fixed efficiency instruction plus a thinking-budget cap reached a 0.66 cost-per-solved ratio at the same resolve rate. This is a single project's Claude Code result, not a portable guarantee. It reinforces measuring cost-per-solved and cache tiers rather than raw token totals alone.
+- [Thunderdome](https://github.com/signalnine/thunderdome) reports that verbosity-only compression can lower tokens while lowering correctness, and that a disciplined six-step workflow outperforms bare prompting on its 19 tasks. Its authors emphasize that current model capability and task mix can dominate scaffold effects. We should keep correctness gates and report task completion with tokens, not reward terseness alone.
+- [token-consumption-benchmark](https://github.com/vagkaratzas/token-consumption-benchmark/blob/main/REPORT.md) reports large context reductions from semantic code retrieval on eight comprehension tasks, but its own breakdown says retrieval tools can lose on pinpoint tasks or small repositories due to setup/output overhead. Treat semantic retrieval as a task-dependent hypothesis, not a universal dependency.
 - [Code-Compression Bench](https://github.com/daseinlabs/code-compression-bench) reports 100 SWE-bench Verified tasks with fixed Claude Code and quality gates. Its authors report Parsec at 62 solved versus 57 baseline and −39% cache-aware total cost, while RTK used more input tokens and cost more. The methodology is substantially stronger than isolated command-size claims, though results remain specific to its scaffold, model, and tasks.
 - [tokbench](https://github.com/Entelligentsia/tokbench) measures provider-billed usage for a real multi-stage coding workflow. Its pilot reports middleware headline compression did not translate to lower billed cost; the authors identify existing phase isolation and compact handoffs as major baseline savings. Treat its N=1-per-arm pilot as exploratory.
 - [Redcon context-eval](https://github.com/natiixnt/redcon) compares file-selection coverage under a shared token budget on 33 real commit tasks. Its author reports 43.8% mean changed-file coverage versus 29.8% for keyword top-k. This evaluates selection quality, not end-to-end patch success or cost, but offers a reproducible development-specific retrieval benchmark.
 
-Practical implication for our next development-task evaluation: retain the compact instruction as one treatment, but record cache-aware cost when available, task/test outcome, elapsed time, and tool actions; avoid adding retrieval machinery unless it beats a reasonable native-search baseline on relevant-file coverage and patch quality. Context compaction alone is not the objective.
+Practical implication: target redundant turns and generated output without cutting required reasoning, discovery, or verification. Keep quality discipline in every arm, pin model reasoning effort and response verbosity, and report full input+output alongside cached subsets and billed cost when available. The public pair runner now captures these Codex settings and CLI version. Retrieval machinery must beat a native-search baseline on patch quality as well as context volume before adoption.
 
 Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intended root and ran `rg --files` over the package, then attempted `uv` dependency downloads that the environment blocked. Targeted CLI tests passed, but full test collection failed because the system `mcp` package is incompatible with the repository. No treatment run was made, so this pilot contributes no efficacy estimate. In pilots 027–028, the runner exposed the same preinstalled environment to both arms, and independent full-suite checks used it; treatment agents did not consistently select it. Token use did not improve. See below.
 
@@ -1048,6 +1050,30 @@ Codex-CLI-native and does not import that project's harness. It also records the
 arm order so studies can reverse it across repetitions. See the package README for
 the runnable protocol. This makes measurements auditable; it does not itself show
 that the Skill saves tokens.
+
+### Local pilot 099: serialized request-size boundary, two order-balanced pairs
+
+P099 repeated the request-byte-boundary test task from a clean source commit with
+the current Skill and no-Skill baseline. Both arms used the same 688-byte prompt
+(SHA-256 `c2bb58df8efb69b1e99fdf68e5f26e285769a14019e544efa2cd4ef9f3bd8f99`),
+Codex CLI 0.143.0, gpt-5.5, medium reasoning effort, and medium verbosity. The
+runner captured settings and traces. The trace parser did not consistently detect
+successful full-text Skill reads in all four arms, so treatment exposure is not
+fully verified and the token comparison is descriptive.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 099-A | baseline → Skill | 181,129 | 173,684 | −4.1% | 151,936 / 151,936 | 15 / 12 | 73.661 / 71.418 s |
+| 099-B | Skill → baseline | 185,387 | 231,327 | +24.8% | 153,984 / 184,832 | 18 / 17 | 89.316 / 81.993 s |
+
+Pooled usage was 405,011 Skill versus 366,516 baseline tokens (+10.5%), while
+actions were 29 versus 33 and elapsed time was 153.411 versus 162.977 seconds.
+Both arms passed the requested boundary checks; AST comparison found no changed
+pre-existing test functions. P099-A had a test-count difference because the
+candidate combined exact-size and one-byte-over checks in one test. One baseline
+also applied import-only Ruff cleanup to unrelated files; the other candidate
+kept its patch scoped. This one task family is noisy and did not establish a token
+saving. Full run data and caveats are in [skill-benchmarks.json](skill-benchmarks.json).
 
 An attempted reverse-order rerun against earlier copied snapshots was rejected as
 evidence: those directories lacked Git metadata, so `git rev-parse` resolved the

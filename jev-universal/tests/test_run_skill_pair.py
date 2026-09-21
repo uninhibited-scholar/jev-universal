@@ -50,6 +50,15 @@ def test_run_arm_records_usage_hashes_and_elapsed_time(tmp_path, monkeypatch):
         "type": "turn.completed",
         "usage": {"input_tokens": 12, "cached_input_tokens": 4, "output_tokens": 3},
     }
+    read_event = {
+        "type": "item.completed",
+        "item": {
+            "type": "command_execution",
+            "command": "sed -n '1,20p' .agents/skills/example/SKILL.md",
+            "exit_code": 0,
+            "aggregated_output": "Use focused evidence.\n",
+        },
+    }
 
     def fake_run(command, **kwargs):
         if command[:3] == ["git", "-C", str(workspace)]:
@@ -60,7 +69,10 @@ def test_run_arm_records_usage_hashes_and_elapsed_time(tmp_path, monkeypatch):
             if "--porcelain" in command:
                 return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
             return subprocess.CompletedProcess(command, 0, stdout="abc123\n", stderr="")
+        assert 'model_reasoning_effort="low"' in command
+        assert 'model_verbosity="low"' in command
         kwargs["stdout"].write(json.dumps(trace) + "\n")
+        kwargs["stdout"].write(json.dumps(read_event) + "\n")
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(run_skill_pair.subprocess, "run", fake_run)
@@ -74,9 +86,12 @@ def test_run_arm_records_usage_hashes_and_elapsed_time(tmp_path, monkeypatch):
         expected_commit="abc123",
         skill_relative_path=Path(".agents/skills/example/SKILL.md"),
         expected_skill_sha256=run_skill_pair.sha256(skill),
+        reasoning_effort="low",
+        verbosity="low",
     )
 
     assert result["skill_present"] is True
+    assert result["skill_read_observed_in_trace"] is True
     assert result["workspace_commit"] == "abc123"
     assert result["usage"]["total_tokens"] == 15
     assert result["elapsed_seconds"] >= 0
@@ -108,4 +123,45 @@ def test_run_arm_rejects_wrong_skill_hash(tmp_path, monkeypatch):
             expected_commit="abc123",
             skill_relative_path=Path("SKILL.md"),
             expected_skill_sha256="wrong",
+            reasoning_effort="low",
+            verbosity="low",
         )
+
+
+def test_skill_reference_with_failed_read_is_not_counted_as_loaded():
+    records = [
+        {
+            "type": "item.completed",
+            "item": {
+                "type": "command_execution",
+                "command": "sed -n '1,20p' .agents/skills/example/SKILL.md",
+                "exit_code": 2,
+            },
+        }
+    ]
+    assert (
+        run_skill_pair.skill_read_observed(
+            records, Path(".agents/skills/example/SKILL.md"), "Use focused evidence.\n"
+        )
+        is False
+    )
+
+
+def test_file_check_without_skill_contents_is_not_counted_as_read():
+    records = [
+        {
+            "type": "item.completed",
+            "item": {
+                "type": "command_execution",
+                "command": "test -f .agents/skills/example/SKILL.md && sed -n '1,20p' .agents/skills/example/SKILL.md || true",
+                "exit_code": 0,
+                "aggregated_output": "",
+            },
+        }
+    ]
+    assert (
+        run_skill_pair.skill_read_observed(
+            records, Path(".agents/skills/example/SKILL.md"), "Use focused evidence.\n"
+        )
+        is False
+    )

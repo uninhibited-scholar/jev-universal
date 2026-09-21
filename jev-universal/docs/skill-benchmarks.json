@@ -23,7 +23,8 @@
     "094",
     "095",
     "096",
-    "098"
+    "098",
+    "099"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -2049,6 +2050,81 @@
     "raw_trace_locations_local_only": [
       "/tmp/jev-p098-order-a",
       "/tmp/jev-p098-order-b"
+    ]
+  },
+  "follow_up_099_request_byte_boundary_order_balanced": {
+    "source_commit": "c6d3a4b3146abd78693d23eb260f53ff02eea4fb",
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "python_version": "3.14.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "task": "Add local tests for accepting a serialized request exactly at MAX_REQUEST_BYTES and rejecting one byte over before transport.",
+    "prompt_sha256": "c2bb58df8efb69b1e99fdf68e5f26e285769a14019e544efa2cd4ef9f3bd8f99",
+    "candidate_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "controls": "Two order-balanced pairs on clean Git worktrees at the same source commit with byte-identical prompts and explicit model, reasoning-effort, and verbosity settings. Candidate was instructed to read the Skill; successful full-content reads were not consistently observable in traces, so treatment exposure is not fully verified in this pilot.",
+    "runs": [
+      {
+        "pair": "099-A",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 181129,
+        "candidate_total_tokens": 173684,
+        "candidate_token_change_percent": -4.1,
+        "baseline_cached_input_tokens_subset": 151936,
+        "candidate_cached_input_tokens_subset": 151936,
+        "baseline_tool_actions": 15,
+        "candidate_tool_actions": 12,
+        "baseline_elapsed_seconds": 73.661,
+        "candidate_elapsed_seconds": 71.418,
+        "baseline_exit_code": 0,
+        "candidate_exit_code": 0,
+        "baseline_tests": "20 passed",
+        "candidate_tests": "19 passed; one combined boundary test covered exact-size and one-byte-over behavior",
+        "ruff": "Both arms passed full-repository Ruff after import-only cleanup in three unrelated files."
+      },
+      {
+        "pair": "099-B",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 185387,
+        "candidate_total_tokens": 231327,
+        "candidate_token_change_percent": 24.8,
+        "baseline_cached_input_tokens_subset": 153984,
+        "candidate_cached_input_tokens_subset": 184832,
+        "baseline_tool_actions": 18,
+        "candidate_tool_actions": 17,
+        "baseline_elapsed_seconds": 89.316,
+        "candidate_elapsed_seconds": 81.993,
+        "baseline_exit_code": 0,
+        "candidate_exit_code": 0,
+        "baseline_tests": "20 passed",
+        "candidate_tests": "20 passed",
+        "ruff": "Baseline fixed three pre-existing import-order issues with ruff --fix; candidate full-repository Ruff hit those existing issues, while changed-file Ruff passed."
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 366516,
+      "candidate_total_tokens": 405011,
+      "candidate_token_change_percent": 10.5,
+      "baseline_cached_input_tokens_subset": 305920,
+      "candidate_cached_input_tokens_subset": 336768,
+      "baseline_tool_actions": 33,
+      "candidate_tool_actions": 29,
+      "baseline_elapsed_seconds": 162.977,
+      "candidate_elapsed_seconds": 153.411,
+      "cost_usd": null,
+      "matched_pair_token_change_percent": null
+    },
+    "quality_audit": "All four arms passed the requested boundary behavior and retained all pre-existing test functions unchanged by AST comparison. Test counts differ in 099-A because candidate used one combined boundary test while baseline used two test functions. In 099-B candidate changes stayed scoped to the target test file; baseline Ruff cleanup also changed three unrelated files' imports without behavior changes.",
+    "status": "No token-efficiency win: pooled candidate used 10.5% more total tokens despite fewer actions and lower elapsed time. Token direction reversed by order (-4.1% in A, +24.8% in B). Do not promote this Skill or treat the task as successful efficacy evidence.",
+    "limitations": [
+      "Only one task family, repeated twice; high run/order variance.",
+      "The trace reader did not consistently verify successful Skill text exposure across the four arms; exposure is therefore not fully verified.",
+      "Cached token counts are subsets of input tokens, not additional tokens.",
+      "Codex subscription traces expose no per-run USD cost."
+    ],
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p099-order-a",
+      "/tmp/jev-p099-order-b"
     ]
   }
 }

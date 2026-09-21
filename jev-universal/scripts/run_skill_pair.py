@@ -11,6 +11,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import platform
+import re
 import subprocess
 import sys
 import time
@@ -60,6 +62,28 @@ def git_status_outside_skill(workspace: Path, skill_path: Path) -> str:
     return result.stdout
 
 
+def skill_read_observed(
+    records: list[dict[str, Any]], skill_relative_path: Path, skill_content: str | None
+) -> bool:
+    if not skill_content:
+        return False
+    expected_path = skill_relative_path.as_posix()
+    read_command = re.compile(r"\b(?:cat|sed|head|tail)\b")
+    for record in records:
+        item = record.get("item")
+        if (
+            record.get("type") == "item.completed"
+            and isinstance(item, dict)
+            and item.get("type") == "command_execution"
+            and item.get("exit_code") == 0
+            and expected_path in str(item.get("command", ""))
+            and read_command.search(str(item.get("command", "")))
+            and skill_content in str(item.get("aggregated_output", ""))
+        ):
+            return True
+    return False
+
+
 def run_arm(
     *,
     arm: str,
@@ -71,6 +95,8 @@ def run_arm(
     expected_commit: str,
     skill_relative_path: Path,
     expected_skill_sha256: str | None,
+    reasoning_effort: str,
+    verbosity: str,
 ) -> dict[str, Any]:
     head = git_head(workspace)
     if head != expected_commit:
@@ -86,13 +112,27 @@ def run_arm(
     trace_path = output_dir / f"{arm}.jsonl"
     stderr_path = output_dir / f"{arm}.stderr"
     started = time.monotonic()
-    with trace_path.open("w", encoding="utf-8") as stdout, stderr_path.open(
-        "w", encoding="utf-8"
-    ) as stderr:
+    with (
+        trace_path.open("w", encoding="utf-8") as stdout,
+        stderr_path.open("w", encoding="utf-8") as stderr,
+    ):
         result = subprocess.run(
             [
-                "codex", "exec", "--json", "--ephemeral", "--sandbox", "workspace-write",
-                "--model", model, "--cd", str(workspace), "-",
+                "codex",
+                "exec",
+                "--json",
+                "--ephemeral",
+                "--sandbox",
+                "workspace-write",
+                "--model",
+                model,
+                "--config",
+                f'model_reasoning_effort="{reasoning_effort}"',
+                "--config",
+                f'model_verbosity="{verbosity}"',
+                "--cd",
+                str(workspace),
+                "-",
             ],
             input=prompt,
             text=True,
@@ -101,7 +141,9 @@ def run_arm(
             check=False,
         )
     elapsed = time.monotonic() - started
-    usage = summarize(read_records(trace_path), model_override=model)
+    records = read_records(trace_path)
+    usage = summarize(records, model_override=model)
+    skill_content = skill_path.read_text(encoding="utf-8") if skill_hash is not None else None
     return {
         "arm": arm,
         "position": position,
@@ -109,7 +151,12 @@ def run_arm(
         "workspace_commit": head,
         "skill_sha256": skill_hash,
         "skill_present": skill_path.is_file(),
+        "skill_read_observed_in_trace": skill_read_observed(
+            records, skill_relative_path, skill_content
+        ),
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "reasoning_effort": reasoning_effort,
+        "verbosity": verbosity,
         "elapsed_seconds": round(elapsed, 3),
         "exit_code": result.returncode,
         "usage": usage,
@@ -118,11 +165,27 @@ def run_arm(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--baseline", required=True, type=Path, help="Frozen baseline git workspace")
-    parser.add_argument("--candidate", required=True, type=Path, help="Frozen candidate git workspace")
+    parser.add_argument(
+        "--baseline", required=True, type=Path, help="Frozen baseline git workspace"
+    )
+    parser.add_argument(
+        "--candidate", required=True, type=Path, help="Frozen candidate git workspace"
+    )
     parser.add_argument("--prompt", required=True, type=Path, help="Exact shared task prompt")
     parser.add_argument("--commit", required=True, help="Expected shared workspace HEAD")
     parser.add_argument("--model", required=True, help="Pinned Codex model identifier")
+    parser.add_argument(
+        "--reasoning-effort",
+        required=True,
+        choices=("minimal", "low", "medium", "high", "xhigh"),
+        help="Pinned Codex reasoning effort",
+    )
+    parser.add_argument(
+        "--verbosity",
+        required=True,
+        choices=("low", "medium", "high"),
+        help="Pinned Codex response verbosity",
+    )
     parser.add_argument(
         "--skill-path",
         type=Path,
@@ -147,9 +210,9 @@ def main() -> None:
         parser.error("output directory must be empty")
     out.mkdir(parents=True, exist_ok=True)
     prompt = prompt_path.read_text(encoding="utf-8")
-    order = ["baseline", "candidate"] if args.order == "baseline-first" else [
-        "candidate", "baseline"
-    ]
+    order = (
+        ["baseline", "candidate"] if args.order == "baseline-first" else ["candidate", "baseline"]
+    )
     workspaces = {"baseline": baseline, "candidate": candidate}
     runs = []
     for position, arm in enumerate(order, start=1):
@@ -166,11 +229,19 @@ def main() -> None:
                 expected_skill_sha256=(
                     args.baseline_skill_sha256 if arm == "baseline" else args.candidate_skill_sha256
                 ),
+                reasoning_effort=args.reasoning_effort,
+                verbosity=args.verbosity,
             )
         )
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "model": args.model,
+        "codex_cli_version": subprocess.run(
+            ["codex", "--version"], check=True, capture_output=True, text=True
+        ).stdout.strip(),
+        "reasoning_effort": args.reasoning_effort,
+        "verbosity": args.verbosity,
+        "python_version": platform.python_version(),
         "order": order,
         "source_commit": args.commit,
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
