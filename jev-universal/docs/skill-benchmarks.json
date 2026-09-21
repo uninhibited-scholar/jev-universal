@@ -2350,5 +2350,182 @@
       "/tmp/jev-p101-controlled/run-a",
       "/tmp/jev-p101-controlled/run-b"
     ]
+  },
+  "exploratory_revision_f098_p101_single_pair": {
+    "source_commit": "40953cdfbe63ef5907249d6daa163a24e57d3a63",
+    "workspace_commit": "62ce91f41919cbb2ec6d37ff79645040bd7601d4",
+    "runner_schema_version": 4,
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "task_prompt_sha256": "704cd44c862ae140c6de886ffbe48cf89332f341a8f4416f28a2c0fd6be261de",
+    "experimental_skill_sha256": "f098fe3f3944697beb3a6a55d915abb1cc4b12f7cad7370afc9b919c9a96b3a8",
+    "pair": "101-E",
+    "order": "baseline -> experimental skill",
+    "shared_environment_overrides_sha256": "583b46463819e717c7cc4b35b9424d921a1659de29e85499edd55a81bbfbd372",
+    "baseline": {
+      "total_tokens": 167080,
+      "input_tokens": 164601,
+      "output_tokens": 2479,
+      "cached_input_tokens_subset": 146816,
+      "tool_actions": 18,
+      "elapsed_seconds": 61.551
+    },
+    "experimental_skill": {
+      "total_tokens": 235940,
+      "input_tokens": 233093,
+      "output_tokens": 2847,
+      "cached_input_tokens_subset": 216576,
+      "tool_actions": 21,
+      "elapsed_seconds": 73.444
+    },
+    "change_percent": {
+      "total_tokens": 41.2,
+      "input_tokens": 41.6,
+      "output_tokens": 14.8,
+      "tool_actions": 16.7,
+      "elapsed_seconds": 19.3
+    },
+    "quality_audit": "Both arms independently passed the same 23-test tests/test_auth.py suite and changed-file Ruff using the same Python 3.13 environment. All 10 pre-existing test functions were AST-equivalent; each added test_jev_port_rejects_malformed_values. Both patches changed only server.py and test_auth.py.",
+    "trace_observation": "The experimental Skill attempted more path-root/tool fallback commands, including repeated failed rg/path probes, despite adding guidance to avoid them. The task named files relative to a nested package without specifying its root; this is a known trigger for path exploration.",
+    "status": "One exploratory order only, not an efficacy estimate. The experimental Skill revision is rejected and is not the published candidate; retain for audit and do not pool with controlled P101 runs.",
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p101-revised/run-a"
+    ]
+  },
+  "auto_discovery_p100_duplicate_json_keys": {
+    "exposure_mode": "discovered",
+    "runner_schema_version": 5,
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "workspace_commit": "62ce91f41919cbb2ec6d37ff79645040bd7601d4",
+    "candidate_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "shared_environment_overrides_sha256": "583b46463819e717c7cc4b35b9424d921a1659de29e85499edd55a81bbfbd372",
+    "skill_read_observed_in_all_candidate_traces": true,
+    "source_commit": "40953cdfbe63ef5907249d6daa163a24e57d3a63",
+    "task_prompt_sha256": "feafb5a0c963dabd2fae5cd1ef23850e3c543f896049baef89e9192d1b010fcb",
+    "task": "Reject duplicate JSON object keys at any nesting level in upstream responses and add a MockTransport evaluate() regression.",
+    "runs": [
+      {
+        "pair": "100-C",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 213956,
+        "candidate_total_tokens": 188288,
+        "candidate_token_change_percent": -12.0,
+        "baseline_cached_input_tokens_subset": 196736,
+        "candidate_cached_input_tokens_subset": 168704,
+        "baseline_tool_actions": 18,
+        "candidate_tool_actions": 15,
+        "baseline_elapsed_seconds": 62.796,
+        "candidate_elapsed_seconds": 62.486,
+        "candidate_skill_read_observed": true
+      },
+      {
+        "pair": "100-D",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 186468,
+        "candidate_total_tokens": 205872,
+        "candidate_token_change_percent": 10.4,
+        "baseline_cached_input_tokens_subset": 186112,
+        "candidate_cached_input_tokens_subset": 189568,
+        "baseline_tool_actions": 16,
+        "candidate_tool_actions": 15,
+        "baseline_elapsed_seconds": 63.55,
+        "candidate_elapsed_seconds": 63.388,
+        "candidate_skill_read_observed": true
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 400424,
+      "candidate_total_tokens": 394160,
+      "candidate_token_change_percent": -1.6,
+      "baseline_cached_input_tokens_subset": 382848,
+      "candidate_cached_input_tokens_subset": 358272,
+      "baseline_tool_actions": 34,
+      "candidate_tool_actions": 30,
+      "baseline_elapsed_seconds": 126.346,
+      "candidate_elapsed_seconds": 125.874,
+      "candidate_elapsed_change_percent": -0.4,
+      "cost_usd": null
+    },
+    "quality_audit": "In-run exact tests passed (19/19) and changed-file Ruff passed in all arms after a formatting fix. Existing tests were preserved; behavior patch was equivalent to the previously independently verified P100 patch.",
+    "status": "The candidate Skill was observed in both traces. Token direction reverses with order (−12.0%, then +10.4%); pooled saving is only 1.6%, with virtually unchanged time. Not stable evidence of efficacy.",
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p100-discovered/run-a",
+      "/tmp/jev-p100-discovered/run-b"
+    ]
+  },
+  "auto_discovery_p101_malformed_port": {
+    "exposure_mode": "discovered",
+    "runner_schema_version": 5,
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "workspace_commit": "62ce91f41919cbb2ec6d37ff79645040bd7601d4",
+    "candidate_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "shared_environment_overrides_sha256": "583b46463819e717c7cc4b35b9424d921a1659de29e85499edd55a81bbfbd372",
+    "skill_read_observed_in_all_candidate_traces": true,
+    "source_commit": "40953cdfbe63ef5907249d6daa163a24e57d3a63",
+    "task_prompt_sha256": "704cd44c862ae140c6de886ffbe48cf89332f341a8f4416f28a2c0fd6be261de",
+    "task": "Return stable field-specific ValueError for malformed JEV_PORT values, add parametrized tests, preserve defaults, valid values, and range checks.",
+    "runs": [
+      {
+        "pair": "101-F",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 227639,
+        "candidate_total_tokens": 202628,
+        "candidate_token_change_percent": -11.0,
+        "baseline_cached_input_tokens_subset": 210432,
+        "candidate_cached_input_tokens_subset": 186496,
+        "baseline_tool_actions": 19,
+        "candidate_tool_actions": 17,
+        "baseline_elapsed_seconds": 63.361,
+        "candidate_elapsed_seconds": 61.737,
+        "candidate_skill_read_observed": true
+      },
+      {
+        "pair": "101-G",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 186468,
+        "candidate_total_tokens": 202831,
+        "candidate_token_change_percent": 8.8,
+        "baseline_cached_input_tokens_subset": 170752,
+        "candidate_cached_input_tokens_subset": 186496,
+        "baseline_tool_actions": 18,
+        "candidate_tool_actions": 18,
+        "baseline_elapsed_seconds": 64.433,
+        "candidate_elapsed_seconds": 67.829,
+        "candidate_skill_read_observed": true
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 414107,
+      "candidate_total_tokens": 405459,
+      "candidate_token_change_percent": -2.1,
+      "baseline_cached_input_tokens_subset": 381184,
+      "candidate_cached_input_tokens_subset": 372992,
+      "baseline_tool_actions": 37,
+      "candidate_tool_actions": 35,
+      "baseline_elapsed_seconds": 127.794,
+      "candidate_elapsed_seconds": 129.566,
+      "candidate_elapsed_change_percent": 1.4,
+      "cost_usd": null
+    },
+    "quality_audit": "In-run exact auth/config tests passed (23/23) and changed-file Ruff passed in all arms after a formatting fix. Independent same-suite and Ruff checks passed on prior identical P101 patches; existing test functions remained unchanged.",
+    "status": "The candidate Skill was observed in both traces. Token direction reverses with order (−11.0%, then +8.8%); pooled saving is 2.1% and elapsed time increases 1.4%. This rejects a stable multi-fold-saving claim.",
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p101-discovered/run-a",
+      "/tmp/jev-p101-discovered/run-b"
+    ]
+  },
+  "runner_v5_exposure_read_audit": {
+    "change": "Added discovered exposure mode: baseline and candidate receive byte-identical task prompts; only candidate has a project Skill in .agents/skills. Added trace detection for full Skill text in command output, even when a later command in the same shell chain fails. Explicit injected mode remains available for historical comparability.",
+    "test_status": "12 runner tests passed; Ruff passed.",
+    "reason": "The earlier runner both injected Skill text and made the file discoverable, so treatment was forced and could duplicate Skill reading.",
+    "interpretation": "In the genuine discovery pairs above, direction reversed with run order and pooled differences were only −1.6% and −2.1%; no reliable token benefit is established."
   }
 }

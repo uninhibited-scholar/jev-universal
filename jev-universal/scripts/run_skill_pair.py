@@ -88,11 +88,21 @@ def git_status_outside_skill(workspace: Path, skill_path: Path) -> str:
     return result.stdout
 
 
-def prompt_for_arm(task_prompt: str, arm: str, skill_content: str | None) -> str:
-    """Expose Skill text explicitly in treatment and use a neutral baseline section."""
+def prompt_for_arm(
+    task_prompt: str,
+    arm: str,
+    skill_content: str | None,
+    exposure_mode: str = "injected",
+) -> str:
+    """Build either an explicitly injected treatment or an identical-prompt trial."""
     if arm == "candidate":
         if not skill_content:
             raise ValueError("candidate workspace must contain the Skill file")
+    if exposure_mode == "discovered":
+        return f"{task_prompt.rstrip()}\n"
+    if exposure_mode != "injected":
+        raise ValueError(f"unsupported exposure mode: {exposure_mode}")
+    if arm == "candidate":
         treatment = skill_content
     else:
         # Equalize the prompt envelope without giving baseline extra guidance.
@@ -104,6 +114,20 @@ def prompt_for_arm(task_prompt: str, arm: str, skill_content: str | None) -> str
         "<task>\n"
         f"{task_prompt.rstrip()}\n"
         "</task>\n"
+    )
+
+
+def observed_skill_read(records: list[dict[str, Any]], skill_content: str | None) -> bool | None:
+    """Return whether a successful Codex command exposed the complete Skill text."""
+    if not skill_content:
+        return None
+    expected = skill_content.rstrip()
+    return any(
+        record.get("type") == "item.completed"
+        and isinstance(record.get("item"), dict)
+        and record["item"].get("type") == "command_execution"
+        and expected in str(record["item"].get("aggregated_output", ""))
+        for record in records
     )
 
 
@@ -122,6 +146,7 @@ def run_arm(
     verbosity: str,
     command_environment: dict[str, str] | None = None,
     codex_executable: str = "codex",
+    exposure_mode: str = "injected",
 ) -> dict[str, Any]:
     head = git_head(workspace)
     if head != expected_commit:
@@ -139,7 +164,7 @@ def run_arm(
         raise ValueError(f"{arm} Skill hash does not match its expected hash")
 
     skill_content = skill_path.read_text(encoding="utf-8") if skill_hash is not None else None
-    arm_prompt = prompt_for_arm(prompt, arm, skill_content)
+    arm_prompt = prompt_for_arm(prompt, arm, skill_content, exposure_mode)
     trace_path = output_dir / f"{arm}.jsonl"
     stderr_path = output_dir / f"{arm}.stderr"
     started = time.monotonic()
@@ -182,12 +207,14 @@ def run_arm(
         "workspace_commit": head,
         "skill_sha256": skill_hash,
         "skill_present": skill_path.is_file(),
-        "skill_injected_into_prompt": arm == "candidate",
+        "skill_injected_into_prompt": exposure_mode == "injected" and arm == "candidate",
         "skill_injected_sha256": (
             hashlib.sha256(skill_content.encode("utf-8")).hexdigest()
-            if arm == "candidate" and skill_content is not None
+            if exposure_mode == "injected" and arm == "candidate" and skill_content is not None
             else None
         ),
+        "exposure_mode": exposure_mode,
+        "skill_read_observed_in_trace": observed_skill_read(records, skill_content),
         "prompt_sha256": hashlib.sha256(arm_prompt.encode("utf-8")).hexdigest(),
         "task_prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
         "prompt_bytes": len(arm_prompt.encode("utf-8")),
@@ -234,6 +261,12 @@ def main() -> None:
         "--command-env-json",
         type=Path,
         help="Optional shared JSON object of environment overrides for agent shell commands",
+    )
+    parser.add_argument(
+        "--exposure-mode",
+        choices=("injected", "discovered"),
+        default="injected",
+        help="Inject Skill text (legacy controlled mode) or let Codex discover the project Skill",
     )
     parser.add_argument("--out", required=True, type=Path, help="New or empty results directory")
     parser.add_argument("--order", choices=("baseline-first", "candidate-first"), required=True)
@@ -284,10 +317,11 @@ def main() -> None:
                 verbosity=args.verbosity,
                 command_environment=command_environment,
                 codex_executable=codex_executable,
+                exposure_mode=args.exposure_mode,
             )
         )
     report = {
-        "schema_version": 4,
+        "schema_version": 5,
         "model": args.model,
         "codex_cli_version": subprocess.run(
             [codex_executable, "--version"], check=True, capture_output=True, text=True
@@ -297,6 +331,7 @@ def main() -> None:
         "python_version": platform.python_version(),
         "command_environment_override_keys": sorted(command_environment),
         "command_environment_overrides_sha256": command_environment_sha256,
+        "exposure_mode": args.exposure_mode,
         "order": order,
         "source_commit": args.commit,
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),

@@ -140,6 +140,32 @@ def test_prompt_for_arm_keeps_task_identical_and_marks_treatment():
     assert run_skill_pair.prompt_for_arm(task, "candidate", skill) == candidate
 
 
+def test_discovered_exposure_uses_identical_prompt_for_both_arms():
+    task = "Fix the bug."
+    skill = "Use focused evidence.\n"
+    candidate = run_skill_pair.prompt_for_arm(task, "candidate", skill, "discovered")
+    baseline = run_skill_pair.prompt_for_arm(task, "baseline", None, "discovered")
+
+    assert candidate == baseline == "Fix the bug.\n"
+
+
+def test_observed_skill_read_uses_full_text_even_if_later_command_failed():
+    skill = "name: example\nUse focused evidence."
+    records = [
+        {
+            "type": "item.completed",
+            "item": {
+                "type": "command_execution",
+                "exit_code": 127,
+                "aggregated_output": skill,
+            },
+        }
+    ]
+    assert run_skill_pair.observed_skill_read(records, skill) is True
+    records[0]["item"]["aggregated_output"] = skill[:8]
+    assert run_skill_pair.observed_skill_read(records, skill) is False
+
+
 def test_prompt_for_candidate_requires_skill():
     with pytest.raises(ValueError, match="candidate workspace must contain"):
         run_skill_pair.prompt_for_arm("task", "candidate", None)

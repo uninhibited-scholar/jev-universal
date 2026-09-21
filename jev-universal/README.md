@@ -8,15 +8,19 @@ Cross-client Jev tools over MCP. [Repository overview](../README.md) · [中文]
 with a pinned Codex model, reasoning effort, response verbosity, and caller-selected order. Both workspaces must have the
 same `HEAD`, be separate real Git worktree roots, and have no changes beyond the
 candidate Skill file; baseline must omit the Skill. The runner explicitly injects
-the exact Skill text into candidate input and sends a neutral instruction section
-to baseline, while keeping the task text identical. This makes Skill exposure
-verifiable and includes Skill input overhead in the token comparison. Set
+by default the runner explicitly injects the exact Skill text into candidate
+input and sends a neutral instruction section to baseline, while keeping the task
+text identical. This includes Skill text overhead but forces the treatment. Use
+`--exposure-mode discovered` to let Codex auto-discover the project Skill with
+identical prompts; this mode records whether a successful trace command showed
+the full Skill contents and is the better measure of normal Skill behavior. Set
 `--skill-path` if the Skill is outside the workspace root, and pass the expected
 candidate Skill hash. Run once as `baseline-first` and once as
 `candidate-first` for an order-balanced pair. The runner writes raw local traces,
 stderr, and a JSON summary with prompt/Skill hashes, token counts, cached input,
 tool actions, elapsed time, exit status, reasoning/verbosity settings, and the
-injected Skill/task-prompt hashes. Pass `--command-env-json` to apply the same
+Skill/task-prompt hashes, exposure mode, and observed-read evidence. Pass
+`--command-env-json` to apply the same
 test/runtime environment overrides to both arms, such as a locked interpreter
 `PATH` or `PYTHONPATH`; the summary stores variable names and a configuration hash,
 never values. Do not put credentials in that file. It does
@@ -37,6 +41,7 @@ python scripts/run_skill_pair.py \
   --baseline-skill-sha256 <baseline-hash> \
   --candidate-skill-sha256 <candidate-hash> \
   --command-env-json /path/to/shared-test-env.json \
+  --exposure-mode discovered \
   --order baseline-first --out /path/to/results-a
 ```
 
