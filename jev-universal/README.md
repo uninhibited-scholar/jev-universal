@@ -7,14 +7,16 @@ Cross-client Jev tools over MCP. [Repository overview](../README.md) · [中文]
 `scripts/run_skill_pair.py` runs one exact prompt against two frozen Git workspaces
 with a pinned Codex model, reasoning effort, response verbosity, and caller-selected order. Both workspaces must have the
 same `HEAD`, be separate real Git worktree roots, and have no changes beyond the
-arm-specific Skill file; install that Skill before the run (the baseline may omit
-it). Set `--skill-path` if the Skill is outside the
-workspace root, and pass the expected per-arm Skill hashes to make exposure
-verifiable. Run once as `baseline-first` and once as
+candidate Skill file; baseline must omit the Skill. The runner explicitly injects
+the exact Skill text into candidate input and sends a neutral instruction section
+to baseline, while keeping the task text identical. This makes Skill exposure
+verifiable and includes Skill input overhead in the token comparison. Set
+`--skill-path` if the Skill is outside the workspace root, and pass the expected
+candidate Skill hash. Run once as `baseline-first` and once as
 `candidate-first` for an order-balanced pair. The runner writes raw local traces,
 stderr, and a JSON summary with prompt/Skill hashes, token counts, cached input,
-tool actions, elapsed time, exit status, reasoning/verbosity settings, and whether
-the trace contains a successful command output with the full Skill text. It does
+tool actions, elapsed time, exit status, reasoning/verbosity settings, and the
+injected Skill/task-prompt hashes. It does
 not judge patch quality: check
 the same tests and behavior in both arms separately. Raw traces may contain private
 prompt or repository data; review before sharing.

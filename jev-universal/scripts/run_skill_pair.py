@@ -4,6 +4,8 @@
 The runner records local raw traces; share only its redacted summary unless you have
 reviewed traces for secrets. Each workspace must be a frozen copy of the same source
 tree with its arm-specific Skill installed (or deliberately absent for baseline).
+Skill text is explicitly injected into candidate input so exposure is auditable;
+the baseline receives a neutral section and the exact same task text.
 """
 
 from __future__ import annotations
@@ -12,7 +14,6 @@ import argparse
 import hashlib
 import json
 import platform
-import re
 import subprocess
 import sys
 import time
@@ -62,26 +63,23 @@ def git_status_outside_skill(workspace: Path, skill_path: Path) -> str:
     return result.stdout
 
 
-def skill_read_observed(
-    records: list[dict[str, Any]], skill_relative_path: Path, skill_content: str | None
-) -> bool:
-    if not skill_content:
-        return False
-    expected_path = skill_relative_path.as_posix()
-    read_command = re.compile(r"\b(?:cat|sed|head|tail)\b")
-    for record in records:
-        item = record.get("item")
-        if (
-            record.get("type") == "item.completed"
-            and isinstance(item, dict)
-            and item.get("type") == "command_execution"
-            and item.get("exit_code") == 0
-            and expected_path in str(item.get("command", ""))
-            and read_command.search(str(item.get("command", "")))
-            and skill_content in str(item.get("aggregated_output", ""))
-        ):
-            return True
-    return False
+def prompt_for_arm(task_prompt: str, arm: str, skill_content: str | None) -> str:
+    """Expose Skill text explicitly in treatment and use a neutral baseline section."""
+    if arm == "candidate":
+        if not skill_content:
+            raise ValueError("candidate workspace must contain the Skill file")
+        treatment = skill_content
+    else:
+        # Equalize the prompt envelope without giving baseline extra guidance.
+        treatment = "[No development instructions are supplied in this section.]"
+    return (
+        "<development_instructions>\n"
+        f"{treatment.rstrip()}\n"
+        "</development_instructions>\n\n"
+        "<task>\n"
+        f"{task_prompt.rstrip()}\n"
+        "</task>\n"
+    )
 
 
 def run_arm(
@@ -106,9 +104,15 @@ def run_arm(
     if status.strip():
         raise ValueError(f"{arm} workspace must be clean outside its Skill file before the run")
     skill_hash = sha256(skill_path) if skill_path.is_file() else None
+    if arm == "candidate" and skill_hash is None:
+        raise ValueError("candidate workspace must contain the Skill file")
+    if arm == "baseline" and skill_hash is not None:
+        raise ValueError("baseline workspace must not contain the Skill file")
     if expected_skill_sha256 is not None and skill_hash != expected_skill_sha256:
         raise ValueError(f"{arm} Skill hash does not match its expected hash")
 
+    skill_content = skill_path.read_text(encoding="utf-8") if skill_hash is not None else None
+    arm_prompt = prompt_for_arm(prompt, arm, skill_content)
     trace_path = output_dir / f"{arm}.jsonl"
     stderr_path = output_dir / f"{arm}.stderr"
     started = time.monotonic()
@@ -134,7 +138,7 @@ def run_arm(
                 str(workspace),
                 "-",
             ],
-            input=prompt,
+            input=arm_prompt,
             text=True,
             stdout=stdout,
             stderr=stderr,
@@ -143,7 +147,6 @@ def run_arm(
     elapsed = time.monotonic() - started
     records = read_records(trace_path)
     usage = summarize(records, model_override=model)
-    skill_content = skill_path.read_text(encoding="utf-8") if skill_hash is not None else None
     return {
         "arm": arm,
         "position": position,
@@ -151,10 +154,15 @@ def run_arm(
         "workspace_commit": head,
         "skill_sha256": skill_hash,
         "skill_present": skill_path.is_file(),
-        "skill_read_observed_in_trace": skill_read_observed(
-            records, skill_relative_path, skill_content
+        "skill_injected_into_prompt": arm == "candidate",
+        "skill_injected_sha256": (
+            hashlib.sha256(skill_content.encode("utf-8")).hexdigest()
+            if arm == "candidate" and skill_content is not None
+            else None
         ),
-        "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "prompt_sha256": hashlib.sha256(arm_prompt.encode("utf-8")).hexdigest(),
+        "task_prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "prompt_bytes": len(arm_prompt.encode("utf-8")),
         "reasoning_effort": reasoning_effort,
         "verbosity": verbosity,
         "elapsed_seconds": round(elapsed, 3),
@@ -234,7 +242,7 @@ def main() -> None:
             )
         )
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "model": args.model,
         "codex_cli_version": subprocess.run(
             ["codex", "--version"], check=True, capture_output=True, text=True
