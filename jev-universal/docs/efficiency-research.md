@@ -1051,6 +1051,40 @@ arm order so studies can reverse it across repetitions. See the package README f
 the runnable protocol. This makes measurements auditable; it does not itself show
 that the Skill saves tokens.
 
+Runner schema 3 fixes the earlier uncertain Skill-exposure measure: it injects
+the exact candidate Skill text into that arm's prompt and a neutral section into
+the baseline, records separate common task and per-arm input hashes, and requires
+the Skill to be absent from baseline and present with the expected hash in
+treatment. The Skill text's own input-token cost is included in the comparison.
+
+### Local pilot 100: duplicate JSON keys, explicit Skill injection
+
+P100 evaluated a security-focused response-parser change. It rejected duplicate
+JSON object keys at any nesting level and added a regression using raw response
+bytes through `evaluate()`/`MockTransport`. The candidate Skill text was explicitly
+injected and hash-verified; both orders used the same task prompt (SHA-256
+`feafb5a0c963dabd2fae5cd1ef23850e3c543f896049baef89e9192d1b010fcb`), tracked
+source tree (`40953cdfbe63ef5907249d6daa163a24e57d3a63`), gpt-5.5, Codex CLI
+0.143.0, medium reasoning, and medium verbosity.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 100-A | baseline → Skill | 382,186 | 286,477 | −25.0% | 342,016 / 250,112 | 28 / 24 | 132.845 / 115.259 s |
+| 100-B | Skill → baseline | 369,179 | 356,133 | −3.5% | 334,080 / 323,840 | 26 / 22 | 102.047 / 100.923 s |
+
+Pooled usage was 642,610 Skill versus 751,365 baseline tokens (−14.5%), 46
+versus 54 tool actions, and 216.182 versus 234.892 seconds. Both patches passed
+the same 19-test core suite and changed-file Ruff in a shared cached environment;
+all pre-existing test functions were AST-equivalent and the duplicate-key smoke
+case returned the safe malformed-response error. The in-run pytest commands
+initially failed collection in both arms because the src-layout wasn't on
+`PYTHONPATH` and the global MCP dependency was incompatible; the independent
+shared-environment reruns passed without product-code changes. Native Git
+worktree checkout stalled, so fresh local repositories were initialized from the
+same exported tracked tree; commit metadata differs from the public source commit.
+This is a promising result on one task family, not proof of a general or stable
+50% saving. Full details are in [skill-benchmarks.json](skill-benchmarks.json).
+
 ### Local pilot 099: serialized request-size boundary, two order-balanced pairs
 
 P099 repeated the request-byte-boundary test task from a clean source commit with

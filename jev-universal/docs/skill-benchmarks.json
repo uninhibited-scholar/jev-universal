@@ -24,7 +24,8 @@
     "095",
     "096",
     "098",
-    "099"
+    "099",
+    "100"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -2125,6 +2126,82 @@
     "raw_trace_locations_local_only": [
       "/tmp/jev-p099-order-a",
       "/tmp/jev-p099-order-b"
+    ]
+  },
+  "follow_up_100_duplicate_json_keys_explicit_skill_injection": {
+    "source_commit": "40953cdfbe63ef5907249d6daa163a24e57d3a63",
+    "workspace_commit": "62ce91f41919cbb2ec6d37ff79645040bd7601d4",
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "python_version": "3.14.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "task": "Reject duplicate JSON object keys at any nesting level in upstream responses, use the existing safe malformed-response message, and add an evaluate()/MockTransport regression.",
+    "prompt_sha256": "feafb5a0c963dabd2fae5cd1ef23850e3c543f896049baef89e9192d1b010fcb",
+    "candidate_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "controls": "Runner schema 3 explicitly injected the exact Skill text in candidate input and a neutral section in baseline; common task prompt SHA, model, CLI, reasoning effort, verbosity, and tracked source tree were matched. Pair B reset both workspaces to the original tracked tree and reinstalled the candidate Skill before reversing order. Workspaces were initialized from the same exported tracked tree because native Git worktree checkout stalled during file materialization; the shared synthetic workspace commit is recorded separately from source_commit.",
+    "runs": [
+      {
+        "pair": "100-A",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 382186,
+        "candidate_total_tokens": 286477,
+        "candidate_token_change_percent": -25.0,
+        "baseline_cached_input_tokens_subset": 342016,
+        "candidate_cached_input_tokens_subset": 250112,
+        "baseline_tool_actions": 28,
+        "candidate_tool_actions": 24,
+        "baseline_elapsed_seconds": 132.845,
+        "candidate_elapsed_seconds": 115.259,
+        "both_runner_exit_code": 0,
+        "independent_shared_environment_tests": "19 passed in each arm",
+        "independent_changed_file_ruff": "passed in each arm"
+      },
+      {
+        "pair": "100-B",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 369179,
+        "candidate_total_tokens": 356133,
+        "candidate_token_change_percent": -3.5,
+        "baseline_cached_input_tokens_subset": 334080,
+        "candidate_cached_input_tokens_subset": 323840,
+        "baseline_tool_actions": 26,
+        "candidate_tool_actions": 22,
+        "baseline_elapsed_seconds": 102.047,
+        "candidate_elapsed_seconds": 100.923,
+        "both_runner_exit_code": 0,
+        "independent_shared_environment_tests": "19 passed in each arm",
+        "independent_changed_file_ruff": "passed in each arm"
+      }
+    ],
+    "aggregate": {
+      "baseline_input_tokens": 741903,
+      "candidate_input_tokens": 634239,
+      "baseline_output_tokens": 9462,
+      "candidate_output_tokens": 8371,
+      "baseline_total_tokens": 751365,
+      "candidate_total_tokens": 642610,
+      "candidate_token_change_percent": -14.5,
+      "baseline_cached_input_tokens_subset": 676096,
+      "candidate_cached_input_tokens_subset": 573952,
+      "baseline_tool_actions": 54,
+      "candidate_tool_actions": 46,
+      "baseline_elapsed_seconds": 234.892,
+      "candidate_elapsed_seconds": 216.182,
+      "cost_usd": null,
+      "matched_pair_token_change_percent": null
+    },
+    "quality_audit": "Both arms independently passed the same 19-test core suite and changed-file Ruff in the same cached environment. Both direct evaluate()/MockTransport smoke checks returned the existing safe malformed-response error. AST comparison found no changed pre-existing test functions; each arm added one duplicate-key regression. The in-run default pytest command could not collect because the workspace lacked src-layout import configuration and the global MCP package was incompatible; shared-environment reruns resolved this without changing product code. No unrelated tracked files changed.",
+    "status": "Exposure-verified order-balanced pair with lower candidate tokens in both orders (−25.0%, −3.5%; pooled −14.5%). Promising for this one task family, not evidence of a stable cross-task saving or the overall 50% target.",
+    "limitations": [
+      "Only one development task family, repeated twice; the order effect was materially larger than the reverse-order estimate.",
+      "The exported tree was reinitialized as a synthetic Git repository because native worktree checkout stalled; tracked file contents match the recorded source commit, while commit metadata differs.",
+      "The first pair had model-run pytest collection failures in both arms; shared locked-environment independent runs passed all 19 tests in both arms.",
+      "Codex subscription traces expose no per-run USD cost."
+    ],
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p100-alt/run-a",
+      "/tmp/jev-p100-alt/run-b"
     ]
   }
 }
