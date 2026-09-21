@@ -1051,6 +1051,15 @@ arm order so studies can reverse it across repetitions. See the package README f
 the runnable protocol. This makes measurements auditable; it does not itself show
 that the Skill saves tokens.
 
+Runner schema 4 adds an auditable shared command-environment override: Codex is resolved before overrides, both arms receive the same JSON environment, and summaries record only override keys plus a canonical hash. The values stay local and should contain no credentials. A controlled P101 rerun exposed material environment confounding in the earlier P101 result:
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 101-C | baseline → Skill | 184,083 | 199,549 | +8.4% | 164,608 / 179,328 | 18 / 17 | 61.692 / 66.293 s |
+| 101-D | Skill → baseline | 168,866 | 203,260 | +20.4% | 153,984 / 170,112 | 18 / 16 | 59.880 / 63.918 s |
+
+Pooling the controlled runs, the Skill used 402,809 versus 352,949 tokens (+14.1%) and 130.211 versus 121.572 seconds (+7.1%), while reducing tool actions from 36 to 33. Both arms had successful runner exits. This reverses the earlier P101 token result; the earlier uncontrolled P101 should not be used to claim savings. Both arms independently passed the same 23-test auth suite and changed-file Ruff in the shared Python 3.13 environment. All 10 pre-existing test functions remained AST-equivalent, both arms added the malformed-port regression, and changes were limited to `server.py` and `test_auth.py`. The result is quality-passing, but it does not support an efficacy claim. Raw traces are local at `/tmp/jev-p101-controlled/run-a` and `run-b`.
+
 Runner schema 3 fixes the earlier uncertain Skill-exposure measure: it injects
 the exact candidate Skill text into that arm's prompt and a neutral section into
 the baseline, records separate common task and per-arm input hashes, and requires

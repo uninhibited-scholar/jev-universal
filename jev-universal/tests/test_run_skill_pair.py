@@ -64,6 +64,7 @@ def test_run_arm_records_usage_hashes_and_elapsed_time(tmp_path, monkeypatch):
             return subprocess.CompletedProcess(command, 0, stdout="abc123\n", stderr="")
         assert 'model_reasoning_effort="low"' in command
         assert 'model_verbosity="low"' in command
+        assert kwargs["env"]["PYTHONPATH"] == "src"
         captured["prompt"] = kwargs["input"]
         kwargs["stdout"].write(json.dumps(trace) + "\n")
         return subprocess.CompletedProcess(command, 0)
@@ -81,6 +82,7 @@ def test_run_arm_records_usage_hashes_and_elapsed_time(tmp_path, monkeypatch):
         expected_skill_sha256=run_skill_pair.sha256(skill),
         reasoning_effort="low",
         verbosity="low",
+        command_environment={"PYTHONPATH": "src"},
     )
 
     assert result["skill_present"] is True
@@ -141,6 +143,25 @@ def test_prompt_for_arm_keeps_task_identical_and_marks_treatment():
 def test_prompt_for_candidate_requires_skill():
     with pytest.raises(ValueError, match="candidate workspace must contain"):
         run_skill_pair.prompt_for_arm("task", "candidate", None)
+
+
+def test_read_command_environment_hashes_canonical_overrides(tmp_path):
+    path = tmp_path / "command-env.json"
+    path.write_text('{"PYTHONPATH":"src","MODE":"test"}', encoding="utf-8")
+
+    values, digest = run_skill_pair.read_command_environment(path)
+
+    assert values == {"PYTHONPATH": "src", "MODE": "test"}
+    assert digest == hashlib.sha256(b'{"MODE":"test","PYTHONPATH":"src"}').hexdigest()
+    assert run_skill_pair.read_command_environment(None)[0] == {}
+
+
+@pytest.mark.parametrize("content", ["[]", '{"BAD=NAME":"x"}', '{"Path":"a","PATH":"b"}'])
+def test_read_command_environment_rejects_invalid_mappings(tmp_path, content):
+    path = tmp_path / "command-env.json"
+    path.write_text(content, encoding="utf-8")
+    with pytest.raises(ValueError):
+        run_skill_pair.read_command_environment(path)
 
 
 def test_run_arm_rejects_baseline_with_skill(tmp_path, monkeypatch):

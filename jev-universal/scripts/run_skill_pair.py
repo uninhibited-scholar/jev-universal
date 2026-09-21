@@ -13,7 +13,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -31,6 +33,29 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def read_command_environment(path: Path | None) -> tuple[dict[str, str], str]:
+    if path is None:
+        overrides: dict[str, str] = {}
+    else:
+        value = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(value, dict) or any(
+            not isinstance(key, str)
+            or not key
+            or "=" in key
+            or "\0" in key
+            or not isinstance(item, str)
+            or "\0" in item
+            for key, item in value.items()
+        ):
+            raise ValueError("command environment JSON must map valid variable names to strings")
+        folded = [key.casefold() for key in value]
+        if len(folded) != len(set(folded)):
+            raise ValueError("command environment JSON has duplicate variable names")
+        overrides = value
+    canonical = json.dumps(overrides, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return overrides, hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def git_head(workspace: Path) -> str:
@@ -95,6 +120,8 @@ def run_arm(
     expected_skill_sha256: str | None,
     reasoning_effort: str,
     verbosity: str,
+    command_environment: dict[str, str] | None = None,
+    codex_executable: str = "codex",
 ) -> dict[str, Any]:
     head = git_head(workspace)
     if head != expected_commit:
@@ -122,7 +149,7 @@ def run_arm(
     ):
         result = subprocess.run(
             [
-                "codex",
+                codex_executable,
                 "exec",
                 "--json",
                 "--ephemeral",
@@ -139,6 +166,7 @@ def run_arm(
                 "-",
             ],
             input=arm_prompt,
+            env={**os.environ, **(command_environment or {})},
             text=True,
             stdout=stdout,
             stderr=stderr,
@@ -202,6 +230,11 @@ def main() -> None:
     )
     parser.add_argument("--baseline-skill-sha256", help="Expected baseline Skill SHA-256")
     parser.add_argument("--candidate-skill-sha256", help="Expected candidate Skill SHA-256")
+    parser.add_argument(
+        "--command-env-json",
+        type=Path,
+        help="Optional shared JSON object of environment overrides for agent shell commands",
+    )
     parser.add_argument("--out", required=True, type=Path, help="New or empty results directory")
     parser.add_argument("--order", choices=("baseline-first", "candidate-first"), required=True)
     args = parser.parse_args()
@@ -214,6 +247,16 @@ def main() -> None:
         parser.error("baseline and candidate must be distinct workspaces")
     if not prompt_path.is_file():
         parser.error("prompt file does not exist")
+    command_env_path = args.command_env_json.resolve() if args.command_env_json else None
+    if command_env_path is not None and not command_env_path.is_file():
+        parser.error("command environment JSON file does not exist")
+    try:
+        command_environment, command_environment_sha256 = read_command_environment(command_env_path)
+    except (OSError, json.JSONDecodeError, ValueError) as error:
+        parser.error(f"invalid command environment JSON: {error}")
+    codex_executable = shutil.which("codex")
+    if codex_executable is None:
+        parser.error("Codex CLI executable not found on PATH")
     if out.exists() and any(out.iterdir()):
         parser.error("output directory must be empty")
     out.mkdir(parents=True, exist_ok=True)
@@ -239,17 +282,21 @@ def main() -> None:
                 ),
                 reasoning_effort=args.reasoning_effort,
                 verbosity=args.verbosity,
+                command_environment=command_environment,
+                codex_executable=codex_executable,
             )
         )
     report = {
-        "schema_version": 3,
+        "schema_version": 4,
         "model": args.model,
         "codex_cli_version": subprocess.run(
-            ["codex", "--version"], check=True, capture_output=True, text=True
+            [codex_executable, "--version"], check=True, capture_output=True, text=True
         ).stdout.strip(),
         "reasoning_effort": args.reasoning_effort,
         "verbosity": args.verbosity,
         "python_version": platform.python_version(),
+        "command_environment_override_keys": sorted(command_environment),
+        "command_environment_overrides_sha256": command_environment_sha256,
         "order": order,
         "source_commit": args.commit,
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),

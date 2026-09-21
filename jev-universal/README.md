@@ -16,7 +16,10 @@ candidate Skill hash. Run once as `baseline-first` and once as
 `candidate-first` for an order-balanced pair. The runner writes raw local traces,
 stderr, and a JSON summary with prompt/Skill hashes, token counts, cached input,
 tool actions, elapsed time, exit status, reasoning/verbosity settings, and the
-injected Skill/task-prompt hashes. It does
+injected Skill/task-prompt hashes. Pass `--command-env-json` to apply the same
+test/runtime environment overrides to both arms, such as a locked interpreter
+`PATH` or `PYTHONPATH`; the summary stores variable names and a configuration hash,
+never values. Do not put credentials in that file. It does
 not judge patch quality: check
 the same tests and behavior in both arms separately. Raw traces may contain private
 prompt or repository data; review before sharing.
@@ -33,8 +36,13 @@ python scripts/run_skill_pair.py \
   --skill-path .agents/skills/jev-dev-efficient/SKILL.md \
   --baseline-skill-sha256 <baseline-hash> \
   --candidate-skill-sha256 <candidate-hash> \
+  --command-env-json /path/to/shared-test-env.json \
   --order baseline-first --out /path/to/results-a
 ```
+
+The optional environment file is a JSON object, for example
+`{"PATH":"/path/to/shared-venv/bin:/usr/bin:/bin","PYTHONPATH":"src"}`.
+The runner resolves Codex CLI on its original `PATH` before applying overrides.
 
 The agent can modify its workspace. For the reverse-order run, recreate clean
 worktrees at the same commit and reinstall the same Skill files, then use

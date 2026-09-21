@@ -2244,7 +2244,7 @@
         "candidate_cached_input_tokens_subset": 329728,
         "baseline_tool_actions": 36,
         "candidate_tool_actions": 27,
-        "baseline_elapsed_seconds": 140.500,
+        "baseline_elapsed_seconds": 140.5,
         "candidate_elapsed_seconds": 118.028,
         "both_runner_exit_code": 0,
         "independent_shared_environment_tests": "23 passed in each arm",
@@ -2278,6 +2278,77 @@
     "raw_trace_locations_local_only": [
       "/tmp/jev-p101/run-a",
       "/tmp/jev-p101/run-b"
+    ]
+  },
+  "runner_v4_controlled_p101": {
+    "source_commit": "40953cdfbe63ef5907249d6daa163a24e57d3a63",
+    "workspace_commit": "62ce91f41919cbb2ec6d37ff79645040bd7601d4",
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "runner_schema_version": 4,
+    "python_version": "3.14.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "task_prompt_sha256": "704cd44c862ae140c6de886ffbe48cf89332f341a8f4416f28a2c0fd6be261de",
+    "candidate_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "shared_environment_override_keys": [
+      "PATH",
+      "PYTHONPATH"
+    ],
+    "shared_environment_overrides_sha256": "583b46463819e717c7cc4b35b9424d921a1659de29e85499edd55a81bbfbd372",
+    "runs": [
+      {
+        "pair": "101-C",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 184083,
+        "candidate_total_tokens": 199549,
+        "candidate_token_change_percent": 8.4,
+        "baseline_cached_input_tokens_subset": 164608,
+        "candidate_cached_input_tokens_subset": 179328,
+        "baseline_tool_actions": 18,
+        "candidate_tool_actions": 17,
+        "baseline_elapsed_seconds": 61.692,
+        "candidate_elapsed_seconds": 66.293,
+        "runner_exit_codes": [
+          0,
+          0
+        ]
+      },
+      {
+        "pair": "101-D",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 168866,
+        "candidate_total_tokens": 203260,
+        "candidate_token_change_percent": 20.4,
+        "baseline_cached_input_tokens_subset": 153984,
+        "candidate_cached_input_tokens_subset": 170112,
+        "baseline_tool_actions": 18,
+        "candidate_tool_actions": 16,
+        "baseline_elapsed_seconds": 59.88,
+        "candidate_elapsed_seconds": 63.918,
+        "runner_exit_codes": [
+          0,
+          0
+        ]
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 352949,
+      "candidate_total_tokens": 402809,
+      "candidate_token_change_percent": 14.1,
+      "baseline_tool_actions": 36,
+      "candidate_tool_actions": 33,
+      "baseline_elapsed_seconds": 121.572,
+      "candidate_elapsed_seconds": 130.211,
+      "candidate_elapsed_change_percent": 7.1,
+      "cost_usd": null
+    },
+    "environment_note": "Both arms received the identical PATH and PYTHONPATH overrides. The runner summary records only keys and canonical configuration hash; the values are held in a local-only JSON file.",
+    "quality_audit": "Both independently passed the identical 23-test tests/test_auth.py suite and changed-file Ruff in the same Python 3.13 venv. AST comparison found all 10 pre-existing test functions unchanged; both added test_jev_port_rejects_malformed_values. Both patches changed only server.py and test_auth.py and preserved defaults, valid values, and range checks.",
+    "status": "Quality-passing controlled pair, but the Skill used more tokens in both orders (+8.4%, +20.4%; pooled +14.1%) and 7.1% more elapsed time, while saving three tool actions. The earlier uncontrolled P101 saving is overturned; this task does not support a Skill efficacy claim.",
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p101-controlled/run-a",
+      "/tmp/jev-p101-controlled/run-b"
     ]
   }
 }
