@@ -1085,6 +1085,30 @@ same exported tracked tree; commit metadata differs from the public source commi
 This is a promising result on one task family, not proof of a general or stable
 50% saving. Full details are in [skill-benchmarks.json](skill-benchmarks.json).
 
+### Local pilot 101: malformed port configuration, second task family
+
+P101 tested whether Skill benefits generalize beyond response parsing. The task
+made `create_server()` return a stable `JEV_PORT` validation message for malformed
+integer values, with regressions for `abc`, `1.5`, and whitespace. It used the same
+gpt-5.5/Codex 0.143.0/medium settings and explicit schema-3 Skill injection as P100,
+with a distinct common prompt (SHA-256
+`704cd44c862ae140c6de886ffbe48cf89332f341a8f4416f28a2c0fd6be261de`).
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 101-A | baseline → Skill | 397,139 | 372,080 | −6.3% | 350,208 / 342,400 | 32 / 29 | 129.086 / 115.205 s |
+| 101-B | Skill → baseline | 421,649 | 362,406 | −14.0% | 378,624 / 329,728 | 36 / 27 | 140.500 / 118.028 s |
+
+Pooled usage was 734,486 Skill versus 818,788 baseline tokens (−10.3%), 56
+versus 68 tool actions, and 233.233 versus 269.586 seconds. All four arms passed
+the same 23-test auth/config suite and changed-file Ruff in the shared locked
+environment; AST comparison found all pre-existing tests unchanged. Both patches
+were limited to `server.py` and `test_auth.py` and preserved valid/default/range
+behavior. The direction agrees with P100 on a distinct configuration task family,
+but the modest reductions and small sample do not demonstrate stable general
+savings or meet the 50% target. Full details are in
+[skill-benchmarks.json](skill-benchmarks.json).
+
 ### Local pilot 099: serialized request-size boundary, two order-balanced pairs
 
 P099 repeated the request-byte-boundary test task from a clean source commit with

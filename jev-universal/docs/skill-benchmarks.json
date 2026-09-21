@@ -25,7 +25,8 @@
     "096",
     "098",
     "099",
-    "100"
+    "100",
+    "101"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -2202,6 +2203,81 @@
     "raw_trace_locations_local_only": [
       "/tmp/jev-p100-alt/run-a",
       "/tmp/jev-p100-alt/run-b"
+    ]
+  },
+  "follow_up_101_invalid_port_config_balanced": {
+    "source_commit": "40953cdfbe63ef5907249d6daa163a24e57d3a63",
+    "workspace_commit": "62ce91f41919cbb2ec6d37ff79645040bd7601d4",
+    "model": "gpt-5.5",
+    "codex_cli_version": "0.143.0",
+    "python_version": "3.14.0",
+    "reasoning_effort": "medium",
+    "verbosity": "medium",
+    "task": "Return a stable field-specific ValueError for malformed JEV_PORT values while preserving defaults, valid values, and existing range checks; add parameterized malformed-value tests.",
+    "prompt_sha256": "704cd44c862ae140c6de886ffbe48cf89332f341a8f4416f28a2c0fd6be261de",
+    "candidate_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "controls": "Runner schema 3 explicitly injected candidate Skill text and a neutral baseline section. Prompt, source tree, model, CLI, reasoning effort, and verbosity were matched; order was reversed across pairs. Pair B reset both workspaces to the exported tracked source tree and reinstalled the same candidate Skill. Synthetic workspace commit and native-worktree checkout caveat are documented under P100.",
+    "runs": [
+      {
+        "pair": "101-A",
+        "order": "baseline -> candidate",
+        "baseline_total_tokens": 397139,
+        "candidate_total_tokens": 372080,
+        "candidate_token_change_percent": -6.3,
+        "baseline_cached_input_tokens_subset": 350208,
+        "candidate_cached_input_tokens_subset": 342400,
+        "baseline_tool_actions": 32,
+        "candidate_tool_actions": 29,
+        "baseline_elapsed_seconds": 129.086,
+        "candidate_elapsed_seconds": 115.205,
+        "both_runner_exit_code": 0,
+        "independent_shared_environment_tests": "23 passed in each arm",
+        "independent_changed_file_ruff": "passed in each arm"
+      },
+      {
+        "pair": "101-B",
+        "order": "candidate -> baseline",
+        "baseline_total_tokens": 421649,
+        "candidate_total_tokens": 362406,
+        "candidate_token_change_percent": -14.0,
+        "baseline_cached_input_tokens_subset": 378624,
+        "candidate_cached_input_tokens_subset": 329728,
+        "baseline_tool_actions": 36,
+        "candidate_tool_actions": 27,
+        "baseline_elapsed_seconds": 140.500,
+        "candidate_elapsed_seconds": 118.028,
+        "both_runner_exit_code": 0,
+        "independent_shared_environment_tests": "23 passed in each arm",
+        "independent_changed_file_ruff": "passed in each arm"
+      }
+    ],
+    "aggregate": {
+      "baseline_input_tokens": 808274,
+      "candidate_input_tokens": 725340,
+      "baseline_output_tokens": 10514,
+      "candidate_output_tokens": 9146,
+      "baseline_total_tokens": 818788,
+      "candidate_total_tokens": 734486,
+      "candidate_token_change_percent": -10.3,
+      "baseline_cached_input_tokens_subset": 728832,
+      "candidate_cached_input_tokens_subset": 672128,
+      "baseline_tool_actions": 68,
+      "candidate_tool_actions": 56,
+      "baseline_elapsed_seconds": 269.586,
+      "candidate_elapsed_seconds": 233.233,
+      "cost_usd": null,
+      "matched_pair_token_change_percent": null
+    },
+    "quality_audit": "All arms independently passed the same 23-test auth/config suite and changed-file Ruff using a shared locked Python environment. AST comparison found no changed pre-existing test functions; each arm added one parameterized malformed-port regression. Both patches changed only server.py and test_auth.py, preserved existing default/range checks, and used the same field-specific error behavior. Model-run pytest attempts were not authoritative because the default interpreter lacked the src-layout import path and had an incompatible MCP package; shared-environment reruns passed.",
+    "status": "Exposure-verified order-balanced pair with lower candidate tokens in both orders (−6.3%, −14.0%; pooled −10.3%). This second, distinct configuration task family replicates the direction of P100, but neither task family individually nor together establishes stable 50% savings.",
+    "limitations": [
+      "One configuration-validation task family, repeated twice; savings remain modest and sample is small.",
+      "The exported tree was reinitialized as a synthetic Git repository because native worktree checkout stalled; tracked contents match the recorded source commit.",
+      "Codex subscription traces expose no per-run USD cost."
+    ],
+    "raw_trace_locations_local_only": [
+      "/tmp/jev-p101/run-a",
+      "/tmp/jev-p101/run-b"
     ]
   }
 }
