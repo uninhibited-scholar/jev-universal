@@ -34,6 +34,9 @@ _TEST_COMMAND = re.compile(
     r"(?i)(?:pytest|unittest|cargo\s+test|npm\s+test|pnpm\s+test|yarn\s+test|"
     r"go\s+test|ruff|mypy|eslint|tsc|\bbuild\b|\bcheck\b)"
 )
+_GO_TEST_FAILURE = re.compile(
+    r"(?m)^\s*FAIL(?:\s+\S+)?(?:\s+(?:\d+(?:\.\d+)?s|\[build failed\]))?\s*$"
+)
 
 
 def is_sensitive(text: str) -> bool:
@@ -45,7 +48,7 @@ def should_compact(command: str, text: str) -> bool:
         return False
     if is_sensitive(text):
         return False
-    if _TEST_COMMAND.search(command) and _FAILURE.search(text):
+    if _TEST_COMMAND.search(command) and (_FAILURE.search(text) or _GO_TEST_FAILURE.search(text)):
         return False
     return True
 

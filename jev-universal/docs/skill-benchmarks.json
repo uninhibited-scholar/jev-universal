@@ -20,7 +20,9 @@
     "091",
     "092",
     "093",
-    "094"
+    "094",
+    "095",
+    "096"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -1857,5 +1859,126 @@
       "cost_usd": null
     },
     "quality_audit": "Both arms added the same two boundary regression tests, with tests confirming exact MAX_REQUEST_BYTES is sent to a local MockTransport and MAX_REQUEST_BYTES+1 fails before transport. All pre-existing test functions remained AST-equivalent; the exact-boundary test uses a slightly different name across arms but asserts the same behavior. Both core suites passed 20 tests, changed-file Ruff passed, and full-repo Ruff reported the same three unrelated existing import-sort findings."
+  },
+  "follow_up_095_go_test_failure_detection_invalid": {
+    "source_commit": "b49a52faf67ec29eb22caaeff56002678ef13252",
+    "model": "gpt-5.5",
+    "task": "Fix large Go test failure output ending in a FAIL package summary so it is never compacted, while preserving compaction of similarly large successful ok output. Add separate regression tests and run the focused pytest and Ruff checks.",
+    "prompt_sha256": "610a95d7ec7743fdca76a4e665b62bc439821ddc0fc1727842b3068a7690f15e",
+    "baseline_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "candidate_skill_sha256": "9eb3e566bc7a44648ebc01ccad6b1933aee29ff6656f250c737bdd0f81309020",
+    "control": "Two isolated copies of the same frozen source and byte-identical task prompt. Intended to compare current published Skill with the proposed concise-failure-diagnostics revision; candidate ran before baseline.",
+    "runs": [
+      {
+        "pair": "095-A",
+        "order": 1,
+        "arm": "candidate_skill",
+        "skill_loaded": true,
+        "input_tokens": 104554,
+        "cached_input_tokens_subset": 83200,
+        "output_tokens": 1718,
+        "total_tokens": 106272,
+        "tool_actions": 8,
+        "elapsed_seconds": 45.721,
+        "exit_code": 0,
+        "focused_tests": "11 passed",
+        "changed_file_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "095-A",
+        "order": 2,
+        "arm": "baseline_skill",
+        "skill_loaded": false,
+        "input_tokens": 104339,
+        "cached_input_tokens_subset": 87936,
+        "output_tokens": 1392,
+        "total_tokens": 105731,
+        "tool_actions": 6,
+        "elapsed_seconds": 37.525,
+        "exit_code": 0,
+        "focused_tests": "11 passed",
+        "changed_file_ruff": "passed",
+        "cost_usd": null
+      }
+    ],
+    "aggregate": {
+      "descriptive_candidate_token_change_percent": 0.5,
+      "matched_pair_token_change_percent": null,
+      "candidate_tool_actions": 8,
+      "baseline_tool_actions": 6,
+      "candidate_elapsed_seconds": 45.721,
+      "baseline_elapsed_seconds": 37.525,
+      "cost_usd": null
+    },
+    "status": "Invalid as a Skill-revision comparison because only the candidate read its Skill. Both patches met the exact requested case and focused gates, but this exposure mismatch prevents causal interpretation.",
+    "limitations": [
+      "Baseline did not load its available Skill, so this is not a valid old-Skill versus revised-Skill pair.",
+      "One run per arm; no repeated estimate.",
+      "Codex subscription traces expose no USD cost."
+    ]
+  },
+  "follow_up_096_go_test_failure_skill_revision": {
+    "source_commit": "b49a52faf67ec29eb22caaeff56002678ef13252",
+    "model": "gpt-5.5",
+    "task": "At the beginning, read the project jev-dev-efficient Skill in each workspace and apply it. Fix the go test output safety case: preserve large failing output ending in FAIL\\texample/module/pkg\\t0.01s while allowing successful ok summaries to compact. Add separate regressions and run focused pytest and Ruff.",
+    "prompt_sha256": "1df707666bdc738498814071db438e55bd4475dd7ff00f55071bd50b84d34a50",
+    "baseline_skill_sha256": "8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637",
+    "candidate_skill_sha256": "9eb3e566bc7a44648ebc01ccad6b1933aee29ff6656f250c737bdd0f81309020",
+    "control": "Two isolated copies of tracked source files from the same frozen commit and byte-identical task prompt; both explicitly read their respective project Skill. Order baseline Skill → revised Skill. The experimental revision adds guidance to prefer concise successful-check output and diagnose from the first failure rather than repeating unchanged commands.",
+    "runs": [
+      {
+        "pair": "096-A",
+        "order": 1,
+        "arm": "baseline_skill",
+        "skill_loaded": true,
+        "input_tokens": 106546,
+        "cached_input_tokens_subset": 93440,
+        "output_tokens": 1861,
+        "total_tokens": 108407,
+        "tool_actions": 9,
+        "elapsed_seconds": 46.743,
+        "exit_code": 0,
+        "focused_tests": "11 passed",
+        "changed_file_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "096-A",
+        "order": 2,
+        "arm": "candidate_skill",
+        "skill_loaded": true,
+        "input_tokens": 157060,
+        "cached_input_tokens_subset": 143744,
+        "output_tokens": 2283,
+        "total_tokens": 159343,
+        "tool_actions": 13,
+        "elapsed_seconds": 60.029,
+        "exit_code": 0,
+        "focused_tests": "11 passed",
+        "changed_file_ruff": "passed",
+        "cost_usd": null
+      }
+    ],
+    "aggregate": {
+      "baseline_total_tokens": 108407,
+      "candidate_total_tokens": 159343,
+      "candidate_token_change_percent": 47.0,
+      "baseline_cached_input_tokens_subset": 93440,
+      "candidate_cached_input_tokens_subset": 143744,
+      "baseline_tool_actions": 9,
+      "candidate_tool_actions": 13,
+      "baseline_elapsed_seconds": 46.743,
+      "candidate_elapsed_seconds": 60.029,
+      "cost_usd": null,
+      "matched_pair_token_change_percent": null
+    },
+    "quality_audit": "Both arms passed the specified 11 focused tests and targeted Ruff, and all 9 pre-existing test functions remained AST-equivalent. A post-run safety probe found a valid Go test output ending in bare `FAIL` is preserved by baseline but compacted by candidate. Therefore the revised Skill treatment failed the broader test-failure-preservation gate even though the requested `FAIL package duration` case passed.",
+    "status": "Exposure-controlled but quality gate failed: the candidate compacts a large Go test output ending in the valid final FAIL marker with no package/time fields. Token difference is descriptive only; exclude from quality-preserving efficacy.",
+    "limitations": [
+      "Quality gate failed on a valid bare Go FAIL summary; not a quality-preserving efficiency estimate.",
+      "One exposure-controlled pair only.",
+      "Codex subscription traces expose no USD cost."
+    ]
   }
 }

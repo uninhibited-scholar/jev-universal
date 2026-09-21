@@ -1019,3 +1019,22 @@ P094 used two fresh clones of source commit `c6d3a4b3146abd78693d23eb260f53ff02e
 | 094-A | baseline → Skill | 160,492 | 170,218 | +6.1% | 133,120 / 151,936 | 18 / 15 | 75.279 / 61.696 s |
 
 Both arms added equivalent exact-boundary and one-byte-over tests and passed all 20 focused core tests. All pre-existing test functions were AST-equivalent. Changed-file Ruff passed in both; full-repository Ruff found the same three unrelated import-order issues. Although the Skill arm used fewer tool actions and less elapsed time, it used 6.1% more tokens. This is one quality-equivalent pair with no token savings, not evidence of efficiency gain. Cost in USD is unavailable. See [skill-benchmarks.json](skill-benchmarks.json) for full details.
+
+
+## GitHub methods reviewed for token-saving development workflows
+
+The primary implementation reviewed was [RTK](https://github.com/rtk-ai/rtk). Its documented method is to transform common shell output before it enters the model context: group search results by file, shorten status/diff output, and collapse successful test runs while retaining failures. RTK explicitly warns that its “up to 90%” claim concerns Bash output rather than the full bill; its displayed token counts are byte/4 estimates. A portable Skill can recommend bounded reads and quiet success output, but cannot intercept or reliably transform host tool output.
+
+A second reference was [Felan Code](https://github.com/felan-ai/felan) and its [published extension benchmark results](https://felan-ai.github.io/felan/results/2026-09-felan-extensions/). It separates extension-specific comparisons and gates efficiency on task success. Its RTK extension table reports 40.6% fewer prompt tokens but 5/6 candidate attempts passed, with one timeout; the result page shows 5/6 candidate runs versus 6/6 baseline. This is a useful warning against promoting token reductions when quality or completion regresses. Its session-compaction comparison reports 52.1% fewer prompt tokens, but the baseline verifier passed only 2/3 times while the candidate passed 3/3, so that comparison also needs quality context. These are upstream-reported results, not independent replications.
+
+### Local pilot 095: skill exposure mismatch
+
+P095 compared the proposed “concise success output; diagnose from the first failure” Skill revision with the current published Skill on the Go output-compaction bug. The treatment loaded its Skill, but the baseline skipped its available Skill. Both arms implemented separate Go failure/success cases and passed 11 focused tests and changed-file Ruff. The raw totals were 106,272 candidate versus 105,731 baseline tokens (+0.5% descriptively), with 8/6 tool actions and 45.721/37.525 seconds. Because Skill exposure differed, this is invalid as a revision comparison and is not used as causal evidence.
+
+### Local pilot 096: controlled Skill-revision follow-up
+
+P096 repeated the task with a fresh prompt that explicitly required both arms to read their respective Skills; order was current Skill then revised Skill. Both passed the specified 11 focused tests and targeted Ruff, and all 9 pre-existing test functions remained AST-equivalent. The baseline used 108,407 total tokens, 93,440 cached input tokens, 9 tool actions, and 46.743 seconds. The revised Skill used 159,343 total tokens, 143,744 cached input tokens, 13 tool actions, and 60.029 seconds (+47.0% tokens, +44.4% actions, +28.4% time).
+
+A post-run safety probe exposed a quality failure: for a large `go test` output ending in the valid final line `FAIL` (without package/time fields), baseline preserved the output but the revised Skill candidate compacted it. The [official Go command documentation](https://pkg.go.dev/cmd/go#hdr-Test_packages) describes this final `FAIL` status for package-list mode. Therefore P096 is not a quality-preserving efficiency win; its token difference is descriptive only. We did not promote the Skill revision. The production hook now has a tested Go-failure guard for package summaries, build-failure summaries, and bare `FAIL`, while preserving compaction of successful `ok` output. Details and all per-run fields are in [skill-benchmarks.json](skill-benchmarks.json).
+
+The current result does not justify changing the published Skill. Continue evaluating concise-success/failure-directed guidance across distinct development tasks, with the quality gate covering nearby valid failure formats before comparing tokens.

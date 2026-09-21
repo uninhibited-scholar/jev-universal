@@ -85,6 +85,20 @@ class OutputCompactionTests(unittest.TestCase):
         bearer = "Authorization: Bearer " + ("a" * 32) + "\n" * 40
         self.assertFalse(should_compact("cat config", bearer))
 
+    def test_go_test_failure_summaries_are_never_compacted(self):
+        for summary in (
+            "FAIL\texample/module/pkg\t0.01s",
+            "FAIL example/module/pkg [build failed]",
+            "FAIL",
+        ):
+            with self.subTest(summary=summary):
+                output = "header\n" + "detail\n" * 40 + summary + "\n"
+                self.assertFalse(should_compact("go test ./...", output))
+
+    def test_go_test_success_summary_remains_compactable(self):
+        output = "header\n" + "detail\n" * 40 + "ok example/module/pkg 0.01s\n"
+        self.assertTrue(should_compact("go test ./...", output))
+
     def test_recall_can_select_lines_or_search(self):
         text = "alpha\nbeta marker\ngamma\nbeta again"
         self.assertEqual(
