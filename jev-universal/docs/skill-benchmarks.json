@@ -12,7 +12,10 @@
     "083",
     "084",
     "085",
-    "087"
+    "087",
+    "088",
+    "088",
+    "089"
   ],
   "date": "2026-09-21",
   "model": "gpt-5.5",
@@ -1184,6 +1187,276 @@
       "All four complete suites passed; targeted Ruff passed in all arms.",
       "Subscription traces do not report per-run USD cost.",
       "Candidate Skill is not adopted as the published version."
+    ]
+  },
+  "follow_up_088_timeout_configuration_candidate": {
+    "source_commit": "ba0818a05613f308171e71540d02605670d25e90",
+    "model": "gpt-5.5",
+    "task": "Add optional JEV_REQUEST_TIMEOUT_SECONDS (default 30, integer range 1–120), bound connect timeout by overall timeout, reject invalid values before requests, test and document.",
+    "prompt_sha256": "92baf1fd882d24754cada46eaaf203f72efa9ee3f086415e23bf427e7e855514",
+    "candidate_skill_sha256": "79521a8425304d1703255e6d8673d5f6c232c4866214cdff31f531c10751e634",
+    "control": "Four clean detached Git worktrees at one commit; byte-identical prompts; candidate worktrees alone had the candidate Skill.",
+    "runs": [
+      {
+        "pair": "088-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 656365,
+        "cached_input_tokens_subset": 609024,
+        "output_tokens": 6423,
+        "total_tokens": 662788,
+        "tool_actions": 30,
+        "shell_command_actions": 26,
+        "elapsed_seconds": 157.962,
+        "exit_code": 0,
+        "full_tests": "67 passed",
+        "targeted_ruff": "failed: I001 import sorting in tests/test_core.py",
+        "cost_usd": null
+      },
+      {
+        "pair": "088-A",
+        "order": 2,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 506048,
+        "cached_input_tokens_subset": 467328,
+        "output_tokens": 5715,
+        "total_tokens": 511763,
+        "tool_actions": 30,
+        "shell_command_actions": 25,
+        "elapsed_seconds": 138.765,
+        "exit_code": 0,
+        "full_tests": "69 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "088-B",
+        "order": 3,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 479236,
+        "cached_input_tokens_subset": 444800,
+        "output_tokens": 5128,
+        "total_tokens": 484364,
+        "tool_actions": 25,
+        "shell_command_actions": 19,
+        "elapsed_seconds": 126.719,
+        "exit_code": 0,
+        "full_tests": "69 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "088-B",
+        "order": 4,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 716547,
+        "cached_input_tokens_subset": 672640,
+        "output_tokens": 6559,
+        "total_tokens": 723106,
+        "tool_actions": 38,
+        "shell_command_actions": 30,
+        "elapsed_seconds": 162.786,
+        "exit_code": 0,
+        "full_tests": "67 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      }
+    ],
+    "aggregate": {
+      "baseline_input_tokens": 1372912,
+      "skill_input_tokens": 985284,
+      "baseline_output_tokens": 12982,
+      "skill_output_tokens": 10843,
+      "baseline_cached_input_tokens_subset": 1281664,
+      "skill_cached_input_tokens_subset": 912128,
+      "baseline_total_tokens": 1385894,
+      "skill_total_tokens": 996127,
+      "baseline_tool_actions": 68,
+      "skill_tool_actions": 55,
+      "baseline_shell_command_actions": 56,
+      "skill_shell_command_actions": 44,
+      "baseline_elapsed_seconds": 320.748,
+      "skill_elapsed_seconds": 265.484,
+      "skill_token_change_percent": -28.1,
+      "cost_usd": null
+    },
+    "candidate_skill_size_bytes": 1155,
+    "changed_files_by_arm": {
+      "candidate-a": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ],
+      "candidate-b": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/docs/hosting.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ],
+      "baseline-a": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ],
+      "baseline-b": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/docs/hosting.md",
+        "jev-universal/src/jev_universal/cli.py",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ]
+    },
+    "existing_tests": "All 13 original test functions preserved in candidate arms and baseline-B; baseline-A modified test_request_and_uncertainty.",
+    "quality_gate": "Not passed: both Skill candidates rejected JEV_REQUEST_TIMEOUT_SECONDS=\"01\" although ordinary integer parsing accepts 1. Baselines accepted it. Do not count the token reduction as a quality-preserving success.",
+    "limitations": [
+      "One task family and two matched repetitions only.",
+      "Both candidate runs read the Skill and reduced pooled tokens 28.1%, but the implementation failed the leading-zero integer boundary.",
+      "One baseline arm changed an existing test and failed targeted Ruff; both candidates passed Ruff and full tests.",
+      "Per-run USD cost unavailable."
+    ]
+  },
+  "follow_up_089_timeout_parser_replication": {
+    "source_commit": "ba0818a05613f308171e71540d02605670d25e90",
+    "model": "gpt-5.5",
+    "task": "Same timeout setting with explicit conventional integer parsing: surrounding whitespace and leading zeros accepted; empty, decimal, alphabetic and out-of-range inputs rejected.",
+    "prompt_sha256": "82f22c7b6bb5e32a53326c40dfe7b9b537d47ceda58e718bcbaad7f9a5a4db93",
+    "candidate_skill_sha256": "159bf224d7ae1fc3639f4c69a5e661d87c4d4ffe77e040311cf3c94a8245ac7d",
+    "control": "Four clean detached Git worktrees at one commit; byte-identical prompts; candidate worktrees alone had the candidate Skill.",
+    "runs": [
+      {
+        "pair": "089-A",
+        "order": 1,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 611994,
+        "cached_input_tokens_subset": 569472,
+        "output_tokens": 5725,
+        "total_tokens": 617719,
+        "tool_actions": 33,
+        "shell_command_actions": 27,
+        "elapsed_seconds": 144.286,
+        "exit_code": 0,
+        "full_tests": "71 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "089-A",
+        "order": 2,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 701617,
+        "cached_input_tokens_subset": 651136,
+        "output_tokens": 5028,
+        "total_tokens": 706645,
+        "tool_actions": 28,
+        "shell_command_actions": 22,
+        "elapsed_seconds": 137.705,
+        "exit_code": 0,
+        "full_tests": "72 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "089-B",
+        "order": 3,
+        "arm": "skill",
+        "skill_loaded": true,
+        "input_tokens": 707630,
+        "cached_input_tokens_subset": 650752,
+        "output_tokens": 5740,
+        "total_tokens": 713370,
+        "tool_actions": 25,
+        "shell_command_actions": 19,
+        "elapsed_seconds": 144.543,
+        "exit_code": 0,
+        "full_tests": "70 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      },
+      {
+        "pair": "089-B",
+        "order": 4,
+        "arm": "baseline",
+        "skill_loaded": false,
+        "input_tokens": 710137,
+        "cached_input_tokens_subset": 660608,
+        "output_tokens": 5675,
+        "total_tokens": 715812,
+        "tool_actions": 32,
+        "shell_command_actions": 26,
+        "elapsed_seconds": 148.838,
+        "exit_code": 0,
+        "full_tests": "70 passed",
+        "targeted_ruff": "passed",
+        "cost_usd": null
+      }
+    ],
+    "aggregate": {
+      "baseline_input_tokens": 1322131,
+      "skill_input_tokens": 1409247,
+      "baseline_output_tokens": 11400,
+      "skill_output_tokens": 10768,
+      "baseline_cached_input_tokens_subset": 1230080,
+      "skill_cached_input_tokens_subset": 1301888,
+      "baseline_total_tokens": 1333531,
+      "skill_total_tokens": 1420015,
+      "baseline_tool_actions": 65,
+      "skill_tool_actions": 53,
+      "baseline_shell_command_actions": 53,
+      "skill_shell_command_actions": 41,
+      "baseline_elapsed_seconds": 293.124,
+      "skill_elapsed_seconds": 282.248,
+      "skill_token_change_percent": 6.5,
+      "cost_usd": null
+    },
+    "candidate_skill_size_bytes": 1257,
+    "changed_files_by_arm": {
+      "baseline-a": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/docs/hosting.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ],
+      "candidate-a": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/docs/hosting.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ],
+      "candidate-b": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/docs/hosting.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ],
+      "baseline-b": [
+        "jev-universal/.env.example",
+        "jev-universal/README.md",
+        "jev-universal/docs/README.zh-CN.md",
+        "jev-universal/src/jev_universal/core.py",
+        "jev-universal/tests/test_core.py"
+      ]
+    },
+    "existing_tests": "All 13 original test functions remained AST-equivalent in every arm; all full suites and targeted Ruff passed.",
+    "acceptance_audit": "Candidate tests accepted \" 01 \" as 1 and rejected blank, non-integer, and out-of-range values before sending requests.",
+    "limitations": [
+      "One task family; matched pair changes were +14.4% and −0.3%, with +6.5% pooled total tokens.",
+      "Both treatment runs read the Skill.",
+      "Both full test suites and lint passed, but the Skill did not reduce tokens on the corrected specification.",
+      "Per-run USD cost unavailable.",
+      "Do not promote the candidate based on this trial."
     ]
   }
 }
