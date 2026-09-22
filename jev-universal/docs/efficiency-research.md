@@ -4,9 +4,22 @@ This document combines a design review with local pilot benchmark results. Commu
 
 ## Current evaluation checkpoint (2026-09-21)
 
-The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. The full Skill revision `1f5ccaf` saved 52.1% and 22.9% in an order-balanced key-file feature pair, but used 20.3% and 27.8% more on a different all-pinned code task. A no-repeat rule then increased usage 32.1%; a compact ~100-word experimental Skill saved 7.1% on one all-pinned repeat, then used 6.5% more on a key-file repeat. It therefore did not generalize across these task types. Evidence does not establish even stable multi-fold savings yet. P057 was excluded after the old Python environment stalled on File Provider dataless files; later pairs used a fresh lockfile environment. Earlier evidence remains mixed: RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
+The target is at least 2x fewer total input+output tokens on representative development work, with 10x as a stretch goal. P079–P081 correct an important runner bias: all arms now receive the byte-identical task prompt and frozen repository snapshot, while only the treatment workspace includes an auto-discoverable project Skill. The original 921-character Skill in P079 used 25.1% more tokens. A tighter 1,083-character revision in P080 used 2.2% more tokens, but 9.0% less time and 20 fewer actions. The 1,123-character P081 revision used 36.7% and 33.1% fewer tokens in two order-balanced repetitions of one CLI feature task (35.1% combined), 33.9% less time, and 28 fewer actions; independent full suites and targeted lint passed. However, P082 applied the same Skill to a distinct OAuth URL-validation bugfix and used 26.0% more tokens, while taking 2.5% less time and using 14 fewer actions. P083 narrowed the Skill description to skip one-rule validation, but the same OAuth task still used 24.1% more tokens; the candidate loaded the Skill in only one of two runs, and one arm modified an existing test. P084 tested a CLI key-precedence edge case: both Skill runs used more tokens (+7.7% pooled), and combined time increased 14.4%, despite 15.4% fewer tool actions; all focused tests passed, while two arms failed targeted Ruff import sorting. P085 tested an evidence-handoff Skill on the same task: pooled candidate usage was −15.7%, but candidate-A loaded the Skill and used 13.9% more tokens while candidate-B skipped it and used 35.0% fewer; treatment and baseline patches also had uneven test coverage. P087 re-ran the output-recall feature from four exact Git worktrees: the candidate used 11.6% fewer pooled tokens, but candidate-A skipped the Skill and candidate-B loaded it; the two matched pairs ranged from −22.0% to +1.6%, and time improved only 0.7%. All four full suites and targeted lint passed. P086 is invalid because its copied workspaces contained uncommitted parent changes. P088 then tested a cross-file request-timeout setting with both treatment runs loading the Skill: pooled tokens fell 28.1%, time 17.2%, and tool actions 19.1%, but both candidates incorrectly rejected the valid integer spelling “01”; this failed the quality gate. P089 clarified standard integer parsing and repeated the same task: every full suite and lint passed, and all 13 existing tests were preserved, but Skill runs used 6.5% more pooled tokens (despite 18.5% fewer tool actions and 3.7% less time). P090 tested a distinct output-recall context feature; both Skill runs loaded the Skill, but used 3.2% more pooled tokens (57 versus 45 tool actions; 313.119 versus 265.808 seconds). All arms passed common focused tests and Ruff, yet they disagreed on CLI alias/zero-value behavior and README scope, so P090 fails patch equivalence and is descriptive only. It also exposed a runner flaw: clean clones lacked the local virtualenv, causing blocked `uv` downloads and retries before local-tool fallbacks. P091 tested a separate key-file path/configuration task. Pooled candidate usage was 12.6% lower, but only one of two treatment runs demonstrably loaded the Skill; that single matched pair used 17.0% fewer tokens, while the other candidate skipped the Skill. All four full suites passed in a common locked Python environment and original CLI tests remained AST-equivalent. This is a promising single-pair signal, not replicated Skill evidence. The P090/P091 runners also revealed that Codex-created shell commands do not reliably inherit benchmark environment variables; future prompts must name exact absolute interpreter/linter paths. P092 replicated the P091 key-file task with explicit shared interpreter paths and a guaranteed same-prompt Skill applicability instruction. The Skill loaded, but used 20.2% more tokens and 16.7% more actions than baseline; its full suite matched baseline except for the sandbox localhost-bind failure. This reverses the one loaded P091 pair (−17.0%), so key-file configuration savings did not replicate. The contrast indicates that reduced exploration alone is not enough to predict total session cost. P093 tested the all-pinned evaluation-metadata fast path. The Skill-loaded pair used 18.9% fewer tokens, 23.5% fewer tool actions, and 5.5% less time; both patches had identical behavior and all existing tests remained unchanged. This is a positive single-pair signal, but one repeat cannot establish reliability or the 2x target. Together P091/P092 show opposite effects on key-file configuration (+20.2% on the controlled retry versus −17.0% in one earlier loaded-Skill pair). These results do not establish stable Skill efficacy; general savings remain unproven. P077/P078 used an extra “read the Skill first” treatment prompt absent from baseline; exclude them from clean efficacy estimates. P076's longer Skill used 0.3% more tokens under equal prompts. A runner audit found P075's baseline loaded an older compact Skill; its 5.9–6.7% reduction compares Skill revisions, not Skill versus no-Skill. Do not use it as a no-Skill estimate. Earlier revisions and the output hook also had mixed results; none establish stable multi-fold savings. One P075 repetition was excluded because the baseline changed an unrelated HTTP test to skip a sandbox failure. P057 was excluded after the old Python environment stalled on File Provider dataless files; later pairs used a fresh lockfile environment. RTK and Pluck pilots did not pass the efficacy gate, and several favorable pairs reversed with order or had quality failures. Do not pool across Skill revisions or treat one task pair as proof. USD cost was unavailable on subscription billing. See the detailed pilots below.
 
 An instrumentation audit also found that pilots 019–021 had placed the candidate under plain `skills/`, not Codex's supported `.agents/skills/` discovery path; traces show manual/late reads in those runs. They are not valid estimates of an automatically invoked Skill and are excluded from the four-pair summary above. Pilot 018 also read the Skill only after repository exploration and is exploratory. Earlier pilots with no Skill-load evidence, late reads, or material behavior/test regressions remain useful for debugging the evaluation method, but not as efficacy evidence. The official [Codex Skills guide](https://developers.openai.com/zh-Hans/docs/build-skills) describes supported locations and progressive loading.
+
+### Recent GitHub research: implications for development tasks
+
+These projects are useful comparisons and design hypotheses, not independent proof for this Skill. Their numbers use different harnesses, models, metrics, and task sets; do not pool them with the local P-series.
+
+- [Quartermaster campaign](https://github.com/narehart/quartermaster/blob/main/bench/docs/CAMPAIGN_WRITEUP.md) reports a preregistered, cache-priced SWE-bench Live study. Its authors report that context removal/front-loading failed to reduce cost across 14 techniques, while a fixed efficiency instruction plus a thinking-budget cap reached a 0.66 cost-per-solved ratio at the same resolve rate. This is a single project's Claude Code result, not a portable guarantee. It reinforces measuring cost-per-solved and cache tiers rather than raw token totals alone.
+- [Thunderdome](https://github.com/signalnine/thunderdome) reports that verbosity-only compression can lower tokens while lowering correctness, and that a disciplined six-step workflow outperforms bare prompting on its 19 tasks. Its authors emphasize that current model capability and task mix can dominate scaffold effects. We should keep correctness gates and report task completion with tokens, not reward terseness alone.
+- [token-consumption-benchmark](https://github.com/vagkaratzas/token-consumption-benchmark/blob/main/REPORT.md) reports large context reductions from semantic code retrieval on eight comprehension tasks, but its own breakdown says retrieval tools can lose on pinpoint tasks or small repositories due to setup/output overhead. Treat semantic retrieval as a task-dependent hypothesis, not a universal dependency.
+- [Code-Compression Bench](https://github.com/daseinlabs/code-compression-bench) reports 100 SWE-bench Verified tasks with fixed Claude Code and quality gates. Its authors report Parsec at 62 solved versus 57 baseline and −39% cache-aware total cost, while RTK used more input tokens and cost more. The methodology is substantially stronger than isolated command-size claims, though results remain specific to its scaffold, model, and tasks.
+- [tokbench](https://github.com/Entelligentsia/tokbench) measures provider-billed usage for a real multi-stage coding workflow. Its pilot reports middleware headline compression did not translate to lower billed cost; the authors identify existing phase isolation and compact handoffs as major baseline savings. Treat its N=1-per-arm pilot as exploratory.
+- [Redcon context-eval](https://github.com/natiixnt/redcon) compares file-selection coverage under a shared token budget on 33 real commit tasks. Its author reports 43.8% mean changed-file coverage versus 29.8% for keyword top-k. This evaluates selection quality, not end-to-end patch success or cost, but offers a reproducible development-specific retrieval benchmark.
+
+Practical implication: target redundant turns and generated output without cutting required reasoning, discovery, or verification. Keep quality discipline in every arm, pin model reasoning effort and response verbosity, and report full input+output alongside cached subsets and billed cost when available. The public pair runner now captures these Codex settings and CLI version. Retrieval machinery must beat a native-search baseline on patch quality as well as context volume before adoption.
 
 Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intended root and ran `rg --files` over the package, then attempted `uv` dependency downloads that the environment blocked. Targeted CLI tests passed, but full test collection failed because the system `mcp` package is incompatible with the repository. No treatment run was made, so this pilot contributes no efficacy estimate. In pilots 027–028, the runner exposed the same preinstalled environment to both arms, and independent full-suite checks used it; treatment agents did not consistently select it. Token use did not improve. See below.
 
@@ -16,6 +29,12 @@ Pilot 026 is an invalid/incomplete pair. Its baseline runner ignored the intende
 - **Optimize the whole session:** avoid redundant reads, tool calls, and user round-trips; don't cut needed context if doing so risks a failed attempt. A [community token-efficiency skill](https://github.com/denfry/claude-skills/blob/main/skills/token-efficiency/SKILL.md) explicitly uses this total-cost framing and keeps detailed guidance/reference material separate from its tiny always-on contract.
 - **Progressive disclosure:** keep the trigger and core rules short; load examples or specialized procedures only when relevant. GitHub's [Copilot skills guidance](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) similarly recommends repository instructions for simple always-relevant rules and Skills for detailed task-specific instructions. The 2026 [SkillReducer preprint](https://arxiv.org/abs/2603.29919) reports that compressing skill descriptions and deferring non-core material reduced its sampled skill bodies while retaining or improving evaluated function; this is evidence about skills in that benchmark, not a result for this Skill.
 - **Small, purposeful validation:** verify changed behavior and acceptance criteria, but do not rerun unrelated checks without a reason. Keep successful output summarized and preserve actionable failure details.
+
+### Recent GitHub methods worth testing (2026)
+
+- **End-to-end compression evaluation:** [Code-Compression Bench](https://github.com/daseinlabs/code-compression-bench) holds headless Claude Code, `claude-sonnet-4-6`, 100 SWE-bench Verified tasks, and the official grader fixed while swapping compression layers. Its author-reported Parsec arm used 54% fewer input tokens and 39% lower total cost than its no-compression arm while solving 62 versus 57 tasks; RTK used 16% more input tokens and 13% more total cost while solving 54. These figures are not an independent replication, but the protocol measures cost per solved task and quality, making it a useful model for our own evaluation. It also warns against adopting a tool based on output-byte reduction alone.
+- **Retrieval tools:** the author-run [token-consumption benchmark](https://github.com/vagkaratzas/token-consumption-benchmark) reports 66.1% fewer total tokens with Serena and 65.5% with Graphify across eight comprehension tasks on a roughly 30-file Python application; a stacked Serena+RTK+Caveman setup reports 69.6%. It measures retrieval/comprehension, not a broad test-passing repair workload, so treat the results as a candidate signal, not predicted end-to-end savings. The larger [Agent Retrieval Bench](https://github.com/eyuansu62/agent-retrieval-bench) contains 427 workflow-linked retrieval cases and finds that no retrieval family dominates code-to-test, trace-to-code, review-comment, and edit-ripple signals. Its file-retrieval metrics do not establish patch success. Together these suggest testing local, symbol/graph-aware retrieval on repository tasks with explicit test and behavior gates, while retaining an abstention path when retrieved context is weak.
+- **Beware idealized baselines:** [Code Context Engine's benchmark](https://github.com/elara-labs/code-context-engine) reports 94% fewer retrieval tokens against reading every touched file in full, but explicitly says this is not a head-to-head comparison against an agent that already uses grep and partial reads. That distinction matches our own finding that retrieval-byte reductions do not automatically become whole-session savings.
 
 ## Additional GitHub research: mechanisms with direct token pathways
 
@@ -753,4 +772,414 @@ P064 ran a compact ~100-word Skill first, then baseline. Both delivered equivale
 
 This negative/weak-positive sequence is consistent with GitHub projects that emphasize keeping context retrieval recoverable and measuring quality separately from compression: [context-kernel](https://github.com/Pinperepette/context-kernel) parks omitted output for targeted recall, while [redcon](https://github.com/natiixnt/redcon) defines per-compressor must-preserve checks and reports task-level context-selection coverage. Their repository-authored benchmark figures are not independent guarantees and are not attributed to this Skill.
 
-P065 checked whether the compact wording generalized to a distinct key-file feature task; baseline ran first. After acceptance-matrix normalization, both arms kept the pre-existing key-file test intact, had separate home-path and literal-`$VARS` cases, passed all 42 tests and targeted Ruff. The compact Skill used 257,592 tokens in 15 actions and 84.199 s versus 241,972 tokens in 14 actions and 80.535 s for baseline (+6.5% tokens, +7.1% actions, +4.5% time). Cached input was 232,960/217,216 candidate/baseline; output was 3,120/2,901. The baseline run had combined the two new cases into its existing test, so we restored that test and split the new cases after measuring, then reran identical gates in both arms; these normalization edits are outside the agent traces and token counts. This remains a negative compact-Skill generalization result.
+P065 is invalid for efficacy comparison: the baseline agent altered an existing test despite the preserve-tests requirement. Post-run edits restored and split cases, but cannot repair that quality failure or make the token pair comparable. Exclude P065's previously reported +6.5% from generalization evidence.
+
+## Local pilots 068–071: symbol helper and recoverable output hook
+
+P068–069 evaluated a Skill-directed Python symbol-view helper in counterbalanced runs. Both implementations passed their 41-test suites. The helper arm used fewer actions, but more tokens in both directions; combined it used 435,541 tokens versus 393,314 baseline (+10.7%), with 15.4% fewer actions and 19.5% more elapsed time. The model reread source and test files after using the helper, erasing any retrieval benefit. Do not treat the helper as an efficiency win.
+
+P070–071 isolated a project-local `PostToolUse` Bash hook that parks large command output and returns a compact preview plus a recall command. The same `gpt-5.5` model, exact prompt, Skill, task, and initial source/test snapshot were used in both arms; order was baseline→candidate, then candidate→baseline. In every run, the implementation passed all 50 tests. The hook compacted the 61-line, 4,957-character pytest result, and a post-session `--grep '50 passed'` recall returned the exact final summary line, confirming that the parked output remained usable. The control did not compact output.
+
+| Pilot | Order | Baseline total tokens | Hook candidate total tokens | Change | Cached input (baseline/candidate) | Actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 070 | baseline → candidate | 82,254 | 76,784 | −6.6% | 70,528 / 62,336 | 4 / 4 | 28.29 / 25.80 s |
+| 071 | candidate → baseline | 77,353 | 76,806 | −0.7% | 67,456 / 67,456 | 4 / 4 | 21.98 / 24.22 s |
+| Combined | order-balanced | 159,607 | 153,590 | −3.8% | 137,984 / 129,792 | 8 / 8 | 50.27 / 50.02 s |
+
+Combined output tokens were 1,457 baseline and 1,567 candidate; USD cost was unavailable. The 3.8% aggregate reduction is small, with the reversed-order pair nearly flat; it does not meet the multi-fold target. Keep the hook experimental and gather more varied development tasks before recommending it. Failure-like test output and outputs matching the secret detector bypass compaction; unit tests cover these pass-through rules. The plugin's added implementation and unit tests are still local and not part of these task workspaces.
+
+P072–073 repeated the same design on a larger, 168-case version of the slugification task, with the exact same prompt and Skill in both arms and hook-only treatment in the candidate. Both runs used the required project root after discarding an initial malformed nested-workspace setup. All four runs passed all 168 tests, and post-session recall recovered the exact `Feature 74` pass line from each candidate's stored output. USD cost was unavailable.
+
+| Pilot | Order | Baseline total tokens | Hook candidate total tokens | Change | Cached input (baseline/candidate) | Actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 072 | baseline → candidate | 101,710 | 80,770 | −20.6% | 86,272 / 71,552 | 4 / 3 | 26.37 / 25.67 s |
+| 073 | candidate → baseline | 68,598 | 64,261 | −6.3% | 55,808 / 49,664 | 2 / 2 | 21.97 / 24.03 s |
+| Combined | order-balanced | 170,308 | 145,031 | −14.8% | 142,080 / 121,216 | 6 / 5 | 48.34 / 49.70 s |
+
+Combined output tokens were 1,327 baseline and 1,518 candidate; elapsed time was 2.8% higher for the candidate. The larger output produced a stronger average token reduction than P070–071, but the reversed-order result was only 6.3%, so order sensitivity remains. P070–073 overall combined reduction is 9.5% (329,915 baseline vs 298,621 candidate) across the two task sizes, with 13 candidate actions vs 14 baseline; this small set still cannot support a stable multi-fold claim. These figures are specific to Codex `PostToolUse` replacement of large Bash results. The official [Codex hooks documentation](https://developers.openai.com/zh-Hans/docs/hooks) describes the feedback-replacement behavior and plugin-bundled hook packaging; this hook is Codex-specific and is not evidence of equivalent behavior in Claude, Kimi, or GLM clients.
+
+P074 verified the current official `continue: false` / `stopReason` response shape in a live Codex call. It replaced a 44-line Bash result with a preview; the model then retrieved lines 20–25 and returned a marker that was absent from the preview. The first recall regex matched nothing, so the model made a second, successful range request. There was no router-error record. This confirms the current result-replacement and recovery path, not token efficacy. Per-run measurements and exclusions are recorded in [output-hook-benchmarks.json](output-hook-benchmarks.json).
+
+## Local pilot 075: Skill revision comparison on cross-file configuration work
+
+We compared a newer task-indexed Skill candidate with the compact predecessor bundled in the frozen source commit (`1c69edfe`) on the Zed MCP config feature, using `gpt-5.5` and independent clean copies. A trace audit confirmed that Codex read the predecessor Skill in both baseline arms and the newer candidate in both treatment arms. P075-A used the original acceptance prompt and ran predecessor first; P075-C used a stricter but identical prompt in both arms (including an explicit no-test-skip rule) and ran candidate first. Both versions changed only the CLI, requested CLI tests, and the two requested docs. Existing test cases and assertions remained intact, with new Zed cases added. An independent common-environment full-suite and targeted Ruff run passed for every arm: A predecessor 39/39, candidate 40/40; C predecessor 41/41, candidate 40/40. Counts differ because the agents added different amounts of new coverage. Ruff used `--ignore I001` for an import-order finding already present in the frozen starting test file. USD cost was unavailable. Since neither arm is a normal no-Skill baseline, these results cannot estimate whether the Skill saves tokens relative to an unmodified assistant workflow.
+
+| Pair | Order | Prior Skill total tokens | Updated Skill total tokens | Change | Cached input (prior/updated) | Actions (prior/updated) | Time (prior/updated) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 075-A | baseline → Skill | 295,324 | 275,671 | −6.7% | 266,112 / 243,456 | 22 / 15 | 97.837 / 90.388 s |
+| 075-C | Skill → baseline | 318,822 | 299,874 | −5.9% | 288,256 / 272,256 | 18 / 17 | 93.816 / 90.248 s |
+
+Input/output tokens were 291,124/4,200 versus 271,759/3,912 in A, and 314,655/4,167 versus 296,058/3,816 in C. Descriptively pooling the two repeats gives 614,146 prior-Skill tokens and 575,545 updated-candidate tokens (−6.3%), 40 versus 32 tool actions, and 191.653 versus 180.636 seconds. The prompts differ in constraint detail, so keep per-pair results primary and do not treat the pooled figure as a clean prompt-controlled estimate. This is one task family and a small revision effect; it neither establishes benefit over a no-Skill baseline nor meets the 2x target.
+
+A separate attempted repetition, P075-B, is excluded: the baseline changed an unrelated HTTP test to skip socket-bind denial, while the candidate did not. Although independent tests passed outside the agent sandbox, the in-agent acceptance behavior was no longer comparable. The two valid pairs did not modify that test. Full local traces and fixture copies are retained under the ignored `.local/efficiency/pilot-075/` directory; only privacy-safe aggregates are published in [skill-benchmarks.json](skill-benchmarks.json).
+
+## Local pilot 076: longer Skill version versus no-Skill baseline
+
+This follow-up corrects P075's control contamination. It used the same frozen source commit (`1c69edfe`), exact same strict task prompt in all four runs, `gpt-5.5`, and the then-published longer Skill file (SHA-256 `4e69f69241d6a67661a3feb49705d8fd21504443e1cfbcff7154aeb4b834c5c1`; later replaced after P077). The baseline snapshots had `.agents/skills/jev-dev-efficient/SKILL.md` removed; treatment traces show the file loaded, and baseline traces show no Skill body. Order was baseline→Skill, then Skill→baseline. All arms changed only the CLI, relevant CLI tests, and the named English/Chinese docs; no existing tests were skipped or modified. Independent full suites passed 40/40 in all four workspaces, and targeted Ruff passed with the pre-existing `I001` rule excluded. The nested agent sandbox itself blocked localhost binding in each arm; this identical environment failure was left unchanged, then the common outer environment passed. USD cost was unavailable.
+
+| Pair | Order | Baseline total tokens | Published Skill total tokens | Change | Cached input (baseline/Skill) | Actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 076-A | baseline → Skill | 322,055 | 308,675 | −4.2% | 288,640 / 279,424 | 23 / 19 | 105.140 / 92.349 s |
+| 076-B | Skill → baseline | 277,532 | 292,950 | +5.6% | 248,960 / 263,680 | 17 / 20 | 90.653 / 105.516 s |
+
+Input/output tokens were 317,498/4,557 versus 304,724/3,951 in A, and 273,693/3,839 versus 288,380/4,570 in B. Across the order-balanced pair, baseline used 599,587 total tokens, 40 actions, and 195.793 seconds; the Skill used 601,625 tokens (+0.3%), 39 actions, and 197.865 seconds (+1.1%). Fewer actions did not translate into fewer tokens or faster completion, and the direction reversed with order. This is one task family, so it cannot establish broader performance, but it is a valid negative efficacy result for the published Skill on this task. Machine-readable aggregates are in [skill-benchmarks.json](skill-benchmarks.json); raw traces remain local and ignored.
+
+## Local pilot 077: compact Skill with forced activation prompt (not a clean Skill comparison)
+
+To lower instruction overhead, we tested the 921-character compact Skill from P064 on the same frozen Zed config task and commit, with `gpt-5.5`. The runner prepended “Use the project Skill from your very first operation. Read `.agents/skills/jev-dev-efficient/SKILL.md` first” to treatment prompts but not baselines. Thus, although the task wording matched, the actual prompts did not; these numbers include the forced-activation instruction and are not a clean estimate of Skill efficacy. Baseline copies contained no project Skill; both valid treatment traces show the Skill body was read. The first candidate A attempt's read command exited 130 without returning the Skill content; it is excluded and replaced by a clean rerun. All four valid arms changed only the CLI, new Zed tests, and requested docs. Independent full suites passed 40–41 tests in all arms; Ruff passed with the pre-existing `I001` exception. Existing tests remained unchanged. The agent sandbox's socket failure was common across arms and did not occur in the independent outer test runs.
+
+| Pair | Order | Baseline total tokens | Compact Skill total tokens | Change | Cached input (baseline/compact) | Actions (baseline/compact) | Time (baseline/compact) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 077-A | baseline → compact | 383,433 | 295,825 | −22.9% | 347,392 / 267,136 | 22 / 20 | 118.514 / 103.621 s |
+| 077-B | compact → baseline | 293,729 | 278,348 | −5.2% | 264,704 / 252,800 | 18 / 19 | 90.515 / 96.817 s |
+
+Input/output tokens were 379,035/4,398 versus 291,631/4,194 in A and 289,941/3,788 versus 274,162/4,186 in B. Descriptive pooling gives 677,162 baseline versus 574,173 compact-Skill tokens (−15.2%), 40 versus 39 actions, and 209.029 versus 200.438 seconds (−4.1%). Token direction remained positive in both orders, but the savings varied substantially and the second run took longer with the Skill. This is one task family; test a second development task type before treating the compact revision as an improvement beyond this Zed feature. Machine-readable aggregates are in [skill-benchmarks.json](skill-benchmarks.json).
+
+## Local pilot 078: compact Skill with forced activation prompt (not a clean Skill comparison)
+
+This order-balanced follow-up used the same 921-character Skill (SHA-256 `2cb2b722e081dc5bd8e97180c2629962f1ecd39e713d2d52da962e3b48aeb99a`) and `gpt-5.5` on a second task: add `--context N` search snippets to Jev's output-recall CLI. All arms started from commit `d92e640e1a0127d0d5b01427947d2650129e0e94`. As in P077, treatment prompts had the extra “use/read the Skill first” instruction; baseline prompts did not, so this is not a clean Skill efficacy estimate. Each arm changed only the recall script, focused tests, and package README. All nine existing test functions were AST-equivalent; each arm added three tests. The 12 focused tests and targeted Ruff checks passed independently in every arm. USD cost was unavailable.
+
+| Pair | Order | Baseline total tokens | Compact Skill total tokens | Change | Cached input (baseline/Skill) | Actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 078-A | baseline → Skill | 502,193 | 510,950 | +1.7% | 456,704 / 469,120 | 30 / 35 | 148.089 / 157.497 s |
+| 078-B | Skill → baseline | 557,446 | 600,004 | +7.6% | 508,416 / 551,040 | 33 / 31 | 181.624 / 175.334 s |
+
+Combined, the baseline used 1,059,639 tokens versus 1,110,954 with the Skill (+4.8%); the Skill had 66 actions versus 63 and took 332.831 versus 329.713 seconds (+0.9%). Total output tokens were 14,301 versus 13,789; the increase came from input. Both valid pairs used more total tokens with the Skill, though pair A had more tool actions while pair B had fewer. This is evidence against a general token-saving claim and shows a skill can add overhead even when quality checks pass. It is still only one feature request/task family and does not resolve broader efficacy. Machine-readable aggregates are in [skill-benchmarks.json](skill-benchmarks.json).
+
+## Local pilot 079: equal prompt, original compact Skill
+
+P079 repeats the P078 CLI feature task while correcting the runner: each arm received the exact same task prompt (SHA-256 `a018371602bd351f315029088e6e6dc293cbd275e9b01b2dbeafe55721444cdb`), the same frozen commit (`d92e640e1a0127d0d5b01427947d2650129e0e94`), and `gpt-5.5`; only treatment workspaces included the 921-character compact Skill. Both treatment traces show the agent selected and read it. All nine existing tests remained AST-equivalent. Independent full suites passed 52–53 tests and targeted Ruff passed in all four arms.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 079-A | baseline → Skill | 404,245 | 569,297 | +40.8% | 366,208 / 517,888 | 26 / 27 | 136.951 / 168.176 s |
+| 079-B | Skill → baseline | 473,097 | 528,419 | +11.7% | 429,440 / 485,888 | 33 / 31 | 166.260 / 148.029 s |
+
+Combined, Skill usage was 1,097,716 versus 877,342 baseline (+25.1%); actions were 58 versus 59 and elapsed time was 316.205 versus 303.211 seconds (+4.3%). This demonstrated that merely loading the first compact version was not enough; trace review found one treatment run made a broad search across docs, scripts, and hooks, producing a 51 KB result.
+
+## Local pilot 080: bounded-search Skill revision
+
+P080 used the identical task prompt and source commit, with an experimental 1,083-character Skill (SHA-256 `9edb0598981627f6b0fddbd9c20a52ded6d7fcd89c5f611515e1c2c97920669c`). The revision explicitly scopes exact-term searches to likely source/test paths and excludes broad docs/generated/cache searches. The agent still performed its initial skill read and project listing in one shell command, but subsequent context searches were narrower. All nine existing tests remained AST-equivalent, each arm added three tests, and all 12 focused tests plus targeted Ruff passed independently in every arm.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Cached input (baseline/candidate) | Actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 080-A | baseline → candidate | 527,508 | 516,648 | −2.1% | 482,048 / 473,600 | 38 / 23 | 167.108 / 148.142 s |
+| 080-B | candidate → baseline | 565,936 | 601,008 | +6.2% | 519,296 / 553,472 | 36 / 31 | 177.775 / 165.608 s |
+
+Pooled usage was 1,117,656 versus 1,093,444 baseline (+2.2%). The candidate used 54 versus 74 tool actions and took 313.750 versus 344.883 seconds (−9.0%), while output tokens fell from 14,704 to 13,167. Input increased enough to offset that output reduction. This version improved action count and elapsed time but did not meet the raw-token objective.
+
+## Local pilot 081: standalone-read trigger and bounded retrieval
+
+P081 used the same prompt hash, model, and source commit as P079/P080. Treatment contained the 1,123-character Skill (SHA-256 `8b0a4c92a3d92d88c7c066851e0532a9067f8e6038c995a852fbc6db7b9c4637`); baseline had no project Skill. The description additionally says to read the Skill by itself before repository exploration. The initial CLI call still combined the Skill read with a short project file listing, so the intended phase separation was not fully followed. The nine existing tests remained AST-equivalent and all four independent full suites passed 52 tests; targeted Ruff passed in all arms.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Cached input (baseline/candidate) | Actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 081-A | baseline → candidate | 863,575 | 546,949 | −36.7% | 802,560 / 501,248 | 48 / 27 | 261.148 / 153.618 s |
+| 081-B | candidate → baseline | 627,570 | 420,047 | −33.1% | 579,456 / 381,952 | 35 / 28 | 184.262 / 140.806 s |
+
+Combined, the candidate used 966,996 versus 1,491,145 baseline tokens (−35.1%), 55 versus 83 tool actions, and 294.424 versus 445.410 seconds (−33.9%). Input tokens fell from 1,474,215 to 954,631 and output tokens from 16,930 to 12,365. Savings were directionally consistent in both pairs and test quality stayed green, but this is still one task family. Repeat the improved Skill on distinct development tasks before generalizing or claiming the 2x target. Machine-readable records for P079–P081 are in [skill-benchmarks.json](skill-benchmarks.json); raw traces remain local and ignored.
+
+
+## Local pilot 082: OAuth URL-validation bugfix
+
+P082 was a second development task family: diagnose self-hosted OAuth URLs with malformed or out-of-range explicit ports and reject them at startup across `JEV_PUBLIC_URL`, `JEV_OAUTH_ISSUER`, and `JEV_OAUTH_JWKS_URL`. All four runs used `gpt-5.5`, the same prompt (SHA-256 `9b6b0fb8b9bfcdf07441ae22039d278b328fcd40ff4fcbcc60c68fd04903d5c0`), and the same frozen source commit (`2857218663541cc9a6c6037462d1dd8b20835f41`); only treatment workspaces had the current P081 Skill. It was automatically selected and read. All five existing auth test functions remained AST-equivalent; each arm added regression tests. Independent full suites passed 60–61 tests per arm, and targeted Ruff passed.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 082-A | baseline → Skill | 328,214 | 457,834 | +39.5% | 295,808 / 417,152 | 30 / 32 | 124.870 / 155.875 s |
+| 082-B | Skill → baseline | 519,976 | 610,597 | +17.4% | 477,312 / 561,152 | 42 / 26 | 185.045 / 146.260 s |
+
+Combined, the Skill used 1,068,431 versus 848,190 baseline tokens (+26.0%), with 58 versus 72 actions and 302.135 versus 309.915 seconds (−2.5%). Output tokens fell slightly (12,529 versus 13,065), but input increased by 26.4%. This small validation fix does not appear to benefit from the Skill's broader discovery rules. The verified port-validation fix and tests were then applied to the main package; full test and lint results are recorded in the PR validation. Machine-readable metrics are in [skill-benchmarks.json](skill-benchmarks.json); raw traces remain local and ignored.
+
+
+## Local pilot 083: trigger-selection control
+
+P083 reused the P082 OAuth validation prompt and frozen source commit to test an experimental narrower Skill description. It is not a new task family or efficacy replication. In four ordered runs, the candidate workspace loaded the Skill only in the first run; the second candidate skipped it. Pooled candidate usage was 1,144,210 versus 921,992 baseline tokens (+24.1%), with 20.2% more time and 9 more tool actions. The trigger did not reliably prevent overhead. Independent full package suites passed in all arms and targeted Ruff was reported green, but one candidate changed an existing auth test function, so preservation was not consistent. The experimental description was not adopted.
+
+## Local pilot 084: CLI key-source precedence
+
+P084 tested a cross-component CLI configuration edge case from the frozen source commit `1c6e3e90414d51289172eb4ff1267f4f5c5972e0`. All four `gpt-5.5` runs received the same prompt (SHA-256 `0e12ec7d62b942624c210ca54d6406242de42e61b043cf55b6f9c3b1191e3959`); only candidate workspaces had the current Skill. All seven original top-level CLI test functions remained AST-equivalent, and the independent focused suite passed 17 tests in every arm. The candidate implementations differed in fallback-file error handling; treat the measured change as the requested behavioral family, not a single uniform patch. Targeted Ruff passed in baseline-A and candidate-A; baseline-B and candidate-B failed import sorting in `tests/test_cli.py`.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 084-A | baseline → Skill | 338,919 | 374,886 | +10.6% | 307,072 / 339,200 | 25 / 24 | 108.331 / 108.113 s |
+| 084-B | Skill → baseline | 466,104 | 491,870 | +5.5% | 428,416 / 454,400 | 20 / 27 | 141.953 / 178.223 s |
+
+Combined, the Skill used 866,756 versus 805,023 baseline tokens (+7.7%) and 286.336 versus 250.284 seconds (+14.4%), while shell actions fell from 47 to 40. This narrow configuration task did not benefit in token or time cost. Do not adopt a savings claim from this pilot. Per-run USD cost is unavailable. Full sanitized metrics are in [skill-benchmarks.json](skill-benchmarks.json); raw traces remain local and ignored.
+
+
+## Pilot 085: evidence-handoff trigger trial
+
+P085 repeated the P084 CLI key-source precedence task and tested a 1,727-byte experimental Skill that recommends a read-only exploration handoff with compact citations. The candidate used 737,567 versus 875,244 baseline total tokens (−15.7%) and took 242.989 versus 256.663 seconds (−5.3%), with 54 versus 62 tool actions. Candidate-A loaded the Skill and used 13.9% more tokens; candidate-B skipped it and used 35.0% fewer. Across all four arms, the seven original CLI test functions remained unchanged; focused suites passed 14–17 tests, but newly added coverage varied. All arms passed targeted Ruff when rechecked with the local binary. Because activation and test coverage varied, this is a trigger/variance study, not a clean efficacy result. The experimental Skill is not adopted.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Cached input (baseline/candidate) | Actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 085-A | baseline → candidate | 344,400 | 392,304 | +13.9% | 308,096 / 358,400 | 28 / 25 | 117.456 / 118.298 s |
+| 085-B | candidate → baseline | 530,844 | 345,263 | −35.0% | 490,624 / 311,552 | 29 / 34 | 139.207 / 124.691 s |
+
+## Pilot 086: invalid exploratory snapshot
+
+P086 attempted to repeat the P081 output-recall feature task with the evidence-handoff Skill. Its provisional totals were 1,023,705 versus 1,063,712 tokens (−3.8%), but a snapshot audit found that all four workspaces inherited uncommitted documentation and Skill changes from the parent checkout. The task files were not included in the generated Git diff, so the frozen-tree and preservation checks are invalid. Do not use these metrics as efficacy or quality evidence; rerun from exact `git archive` snapshots.
+
+
+## Local pilot 087: clean-worktree output-recall feature
+
+P087 re-ran the P086 output-recall feature task from four actual detached Git worktrees at the identical source commit, with candidate Skill files as the only initial difference. All 11 existing output-compaction test methods remained AST-equivalent. The task changed only the recall CLI, its focused tests, and README; all full suites and targeted Ruff checks passed.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 087-A | baseline → Skill | 462,757 | 360,755 | −22.0% | 424,960 / 325,504 | 25 / 22 | 152.438 / 142.751 s |
+| 087-B | Skill → baseline | 367,731 | 373,687 | +1.6% | 327,552 / 338,560 | 23 / 21 | 122.225 / 130.031 s |
+
+Combined, candidate usage was 734,442 versus 830,488 baseline tokens (−11.6%), while time fell only 0.7% and tool actions fell 2.2% (shell commands fell 10.0%). Crucially, candidate-A did not load the Skill, while candidate-B did; thus the 22% saving came from the run that skipped the treatment, and the loaded-Skill pair was slightly worse. This is not evidence that the experimental Skill saves tokens. All four independent full suites passed (63–65 tests), targeted Ruff passed, and USD cost was unavailable. The revised Skill remains a local experiment and the published P081 Skill stays unchanged.
+
+## GitHub research reviewed
+
+The evidence-handoff experiment was motivated by distinct mechanisms in public repositories, not by adopting their headline numbers. [FastContext](https://github.com/CAMV1234/fastcontext) reports that a read-only explorer can return compact file/line citations and reduce main-agent tokens, but its architecture uses a separately configured model endpoint, so the reported savings do not directly transfer to a no-API Skill. [tokbench](https://github.com/Entelligentsia/tokbench) emphasizes fresh contexts between reviewed workflow phases and persona-scoped handoffs; it also notes that existing orchestration can already make middleware redundant. [Code-Compression Bench](https://github.com/daseinlabs/code-compression-bench) evaluates end-to-end success and cache-aware cost on a fixed agent/model/task set, and reports that some compression layers increase cost despite lower visible output. [compressor](https://github.com/anvanster/compressor) uses reversible omissions, explicit retrieval markers, and fail-open hooks. The transferable principles are measured end-to-end cost, cache stability, role/phase isolation where already supported, and recoverable evidence; none guarantee a Skill-only gain.
+
+
+## Local pilot 088: request-timeout configuration candidate
+
+P088 used four clean Git worktrees at source commit ba0818a05613f308171e71540d02605670d25e90, the same prompt in all arms, and a treatment-only experimental Skill. Both candidate runs read the Skill. The request-timeout feature changed the environment example, README, core request client, and tests; candidate-B also updated hosting docs. Candidate arms passed their full suites (69 tests each) and targeted Ruff. Baseline-A modified one existing test and failed targeted Ruff; the other baseline passed. An independent AST audit found all 13 original test functions unchanged in both candidates.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 088-A | baseline → Skill | 662,788 | 511,763 | −22.8% | 609,024 / 467,328 | 30 / 30 | 157.962 / 138.765 s |
+| 088-B | Skill → baseline | 723,106 | 484,364 | −33.0% | 672,640 / 444,800 | 25 / 38 | 126.719 / 162.786 s |
+
+Combined, the candidate used 996,127 versus 1,385,894 tokens (−28.1%), 55 versus 68 tool actions (−19.1%), and 265.484 versus 320.748 seconds (−17.2%). This is promising efficiency evidence, but manual boundary verification found a specification miss: both treatment implementations rejected JEV_REQUEST_TIMEOUT_SECONDS="01" even though integer parsing accepts it as 1, and both baselines accepted it. This fails the quality gate. Do not count P088 as a quality-preserving success or adopt its Skill candidate.
+
+## Local pilot 089: corrected timeout integer contract
+
+P089 repeated the same feature from the same four-worktree source commit, clarifying that normal integer-string parsing—including whitespace and leading zeros—must be retained. The experimental Skill adds an instruction not to invent stricter input rules. All four independent full suites passed (70–72 tests); targeted Ruff passed in every arm. All 13 existing test functions remained AST-equivalent in all worktrees. Candidate tests accepted " 01 " as 1 and rejected blank, non-integer, and out-of-range values before sending a request. The treatment Skill loaded in both candidate runs.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 089-A | baseline → Skill | 617,719 | 706,645 | +14.4% | 569,472 / 651,136 | 33 / 28 | 144.286 / 137.705 s |
+| 089-B | Skill → baseline | 715,812 | 713,370 | −0.3% | 660,608 / 650,752 | 32 / 25 | 148.838 / 144.543 s |
+
+Combined, Skill usage was 1,420,015 versus 1,333,531 baseline tokens (+6.5%), while tool actions fell 18.5% and time 3.7%. Correctness is restored, but token savings did not replicate under the clarified contract. This same-task replication does not count as a new task family and does not support promotion. USD cost remains unavailable. The published P081 Skill remains unchanged; complete per-run data is in [skill-benchmarks.json](skill-benchmarks.json).
+
+## Local pilot 090: output-recall search context
+
+P090 used the same exact task prompt (SHA-256 `c4236824145b5a57ef515fddca2956cf4566dc70959f5316fda7cc4e75be5711`) and source commit `1c6e3e90414d51289172eb4ff1267f4f5c5972e0` in four independent clones. The Skill was available only in the two treatment clones and was explicitly read in both. Run order was baseline-A, Skill-A, Skill-B, baseline-B. The distinct task added context lines around output-recall search hits, overlap deduplication, boundary clipping, input validation, tests, and documentation.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 090-A | baseline → Skill | 391,959 | 445,456 | +13.6% | 347,392 / 386,432 | 22 / 29 | 125.104 / 155.632 s |
+| 090-B | Skill → baseline | 458,038 | 431,840 | −5.7% | 418,816 / 371,072 | 23 / 28 | 140.704 / 157.487 s |
+
+Pooled, Skill usage was 877,296 versus 849,997 baseline tokens (+3.2%); cached input was 757,504 versus 766,208, tool actions 57 versus 45, and elapsed time 313.119 versus 265.808 seconds. The baseline-first pair was more expensive under Skill (+13.6%); the Skill-first pair was 5.7% cheaper under Skill, showing an order reversal. Subscription traces do not expose USD cost.
+
+The quality gate also failed despite all four patches passing the same independently rerun 12-test focused suite and Ruff. Baseline-A and candidate-A added an unrequested `--search` alias for `--grep`; arms disagreed on whether explicit `--context 0` preserves default output or is rejected, and README changes landed at different scopes. Do not treat this as a quality-preserving efficacy estimate.
+
+The experiment exposed a harness issue: clean clones omitted the preinstalled local virtualenv, so `uv` tried network dependency downloads that were blocked. Agents recovered with local pytest/Ruff, but several duplicated validation commands. Future pilots must make the common offline environment visible in every arm from the start and record these setup actions separately. Full per-run JSON and raw traces are in [skill-benchmarks.json](skill-benchmarks.json) and the local ignored `.local/efficiency/pilot-090/` directory.
+
+
+## Local pilot 091: key-file home shorthand
+
+P091 used the exact same prompt (SHA-256 `ed16b33633bfccd02e8ceba670fe71c193d57a0d0246bcbbd1e199dec76229d3`) and four clean clones of source commit `1e9f6043ec16d2c982a3b299608655ea69f0f7d5`. Only Skill-A and Skill-B contained the published Skill. Run order was baseline-A, Skill-A, Skill-B, baseline-B. The task added leading `~/` support for `TYPESAFE_API_KEY_FILE`, while keeping `$VARS` literal, env-key precedence and generic file-read errors; tests use temporary home paths with spaces and documentation covers English and Chinese.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 091-A | baseline → Skill | 1,043,088 | 946,934 | −9.2% | 989,952 / 868,736 | 34 / 34 | 495.066 / 328.785 s |
+| 091-B | Skill → baseline | 777,367 | 644,921 | −17.0% | 729,216 / 582,272 | 31 / 23 | 270.561 / 275.024 s |
+
+Pooled Skill-arm usage was 1,591,855 versus 1,820,455 baseline tokens (−12.6%), 57 versus 65 tool actions, and 603.809 versus 765.627 seconds. However, trace inspection found that Skill-A did not complete its Skill-read command; only Skill-B demonstrably loaded the Skill. The loaded-Skill pair used 17.0% fewer total tokens and 25.8% fewer actions, but 1.6% more time. Treat this as a one-pair signal only; the pooled percentage is descriptive, not a causal estimate. Subscription traces do not expose USD cost.
+
+AST comparison confirmed all 7 existing `tests/test_cli.py` functions remained unchanged in every arm. Candidate-A added one fewer new CLI test than baseline-A. All four full suites passed when rerun in the common locked Python 3.13 environment (65/64/65/65 tests), and targeted Ruff passed with the pre-existing I001 import-order rule excluded. Initial agent runs tried incompatible ambient interpreters/MCP versions, causing collection failures and repeated environment discovery. This was a runner issue, not a code regression. Future benchmark prompts should state exact absolute Python and Ruff paths instead of relying on environment variables inherited by `codex exec` shell calls. Full per-run records and traces are in [skill-benchmarks.json](skill-benchmarks.json) and `.local/efficiency/pilot-091/`.
+
+
+## Local pilot 092: key-file home shorthand replication
+
+P092 repeated the P091 key-file `~/` task from source commit `1e9f6043ec16d2c982a3b299608655ea69f0f7d5`, with a new byte-identical prompt in both arms. It explicitly names the common Python/Ruff executable paths and tells both arms to use any applicable project Skill, so the treatment Skill loads. Order was baseline → Skill.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 092-A | baseline → Skill | 270,380 | 324,894 | +20.2% | 219,648 / 277,760 | 18 / 21 | 237.214 / 101.151 s |
+
+The Skill was read before exploration in treatment. Both arms passed focused CLI tests and Ruff. Both full suites had one identical environment failure, `tests/test_http.py::test_http` raising `PermissionError` while binding localhost; baseline otherwise passed 62 tests, treatment 63. AST audit confirmed all 7 original CLI test functions were unchanged. The P092 loaded-Skill pair used 20.2% more tokens, directly reversing P091’s one confirmed loaded-Skill pair (−17.0%). This matched replication shows no stable token savings for the configuration task family. Time differed sharply despite comparable tool counts and should not be interpreted as a stable effect. USD cost is unavailable; per-run usage is in [skill-benchmarks.json](skill-benchmarks.json).
+
+
+## Local pilot 093: all-pinned evaluation metadata
+
+P093 used two clean clones of source commit `c6d3a4b3146abd78693d23eb260f53ff02eea4fb`, identical prompt SHA-256 `bebda339d5e569ebdc9cfef06cb273e86ba4f1d6f0cc62b33d77d3cf490af5dc`, and order Skill → baseline. The Skill was explicitly loaded. The task fixed `jev_select_context`'s all-pinned fast path to return the same evaluation metadata fields as normal `evaluate()` results, while avoiding evaluator/network calls. Both arms used the same locked absolute Python/Ruff paths.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 093-A | Skill → baseline | 230,283 | 186,850 | −18.9% | 200,832 / 166,272 | 17 / 13 | 74.603 / 70.472 s |
+
+Both arms produced equivalent implementations. Each added exactly one test function asserting the metadata fields and that `evaluate` is never called; all 16 old test functions remained AST-equivalent. Both focused core suites passed (19 tests). Full suites each passed 61 tests and hit the same sandbox-only `PermissionError` in `tests/test_http.py::test_http` while binding localhost. Both targeted Ruff checks passed after adding the new test required rearranging a pre-existing unsorted import block. USD cost is unavailable. This is a quality-preserving positive single pair, not proof of repeatable or 2x savings. Full measurements are in [skill-benchmarks.json](skill-benchmarks.json).
+
+
+## Local pilot 094: serialized request-size boundary
+
+P094 used two fresh clones of source commit `c6d3a4b3146abd78693d23eb260f53ff02eea4fb` and the same prompt (SHA-256 `073533a3dc920885b79278eace4c5fb2839f51e159e8f8a093824d5b920b529f`). Only treatment had the project Skill; order was baseline → Skill. The task added local regression coverage for accepting an encoded request exactly at `MAX_REQUEST_BYTES` and rejecting one byte over before transport. Existing implementation already enforced the correct boundary.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 094-A | baseline → Skill | 160,492 | 170,218 | +6.1% | 133,120 / 151,936 | 18 / 15 | 75.279 / 61.696 s |
+
+Both arms added equivalent exact-boundary and one-byte-over tests and passed all 20 focused core tests. All pre-existing test functions were AST-equivalent. Changed-file Ruff passed in both; full-repository Ruff found the same three unrelated import-order issues. Although the Skill arm used fewer tool actions and less elapsed time, it used 6.1% more tokens. This is one quality-equivalent pair with no token savings, not evidence of efficiency gain. Cost in USD is unavailable. See [skill-benchmarks.json](skill-benchmarks.json) for full details.
+
+
+## GitHub methods reviewed for token-saving development workflows
+
+The primary implementation reviewed was [RTK](https://github.com/rtk-ai/rtk). Its documented method is to transform common shell output before it enters the model context: group search results by file, shorten status/diff output, and collapse successful test runs while retaining failures. RTK explicitly warns that its “up to 90%” claim concerns Bash output rather than the full bill; its displayed token counts are byte/4 estimates. A portable Skill can recommend bounded reads and quiet success output, but cannot intercept or reliably transform host tool output.
+
+A second reference was [Felan Code](https://github.com/felan-ai/felan) and its [published extension benchmark results](https://felan-ai.github.io/felan/results/2026-09-felan-extensions/). It separates extension-specific comparisons and gates efficiency on task success. Its RTK extension table reports 40.6% fewer prompt tokens but 5/6 candidate attempts passed, with one timeout; the result page shows 5/6 candidate runs versus 6/6 baseline. This is a useful warning against promoting token reductions when quality or completion regresses. Its session-compaction comparison reports 52.1% fewer prompt tokens, but the baseline verifier passed only 2/3 times while the candidate passed 3/3, so that comparison also needs quality context. These are upstream-reported results, not independent replications.
+
+### Local pilot 095: skill exposure mismatch
+
+P095 compared the proposed “concise success output; diagnose from the first failure” Skill revision with the current published Skill on the Go output-compaction bug. The treatment loaded its Skill, but the baseline skipped its available Skill. Both arms implemented separate Go failure/success cases and passed 11 focused tests and changed-file Ruff. The raw totals were 106,272 candidate versus 105,731 baseline tokens (+0.5% descriptively), with 8/6 tool actions and 45.721/37.525 seconds. Because Skill exposure differed, this is invalid as a revision comparison and is not used as causal evidence.
+
+### Local pilot 096: controlled Skill-revision follow-up
+
+P096 repeated the task with a fresh prompt that explicitly required both arms to read their respective Skills; order was current Skill then revised Skill. Both passed the specified 11 focused tests and targeted Ruff, and all 9 pre-existing test functions remained AST-equivalent. The baseline used 108,407 total tokens, 93,440 cached input tokens, 9 tool actions, and 46.743 seconds. The revised Skill used 159,343 total tokens, 143,744 cached input tokens, 13 tool actions, and 60.029 seconds (+47.0% tokens, +44.4% actions, +28.4% time).
+
+A post-run safety probe exposed a quality failure: for a large `go test` output ending in the valid final line `FAIL` (without package/time fields), baseline preserved the output but the revised Skill candidate compacted it. The [official Go command documentation](https://pkg.go.dev/cmd/go#hdr-Test_packages) describes this final `FAIL` status for package-list mode. Therefore P096 is not a quality-preserving efficiency win; its token difference is descriptive only. We did not promote the Skill revision. The production hook now has a tested Go-failure guard for package summaries, build-failure summaries, and bare `FAIL`, while preserving compaction of successful `ok` output. Details and all per-run fields are in [skill-benchmarks.json](skill-benchmarks.json).
+
+The current result does not justify changing the published Skill. Continue evaluating concise-success/failure-directed guidance across distinct development tasks, with the quality gate covering nearby valid failure formats before comparing tokens.
+# Evaluation harness provenance
+
+The public `scripts/run_skill_pair.py` runner adopts practical controls used by
+[`agent-skill-eval`](https://github.com/tardigrde/agent-skill-eval): pin the model
+and task, verify the skill invocation artifact, retain token/cache/action/time
+measurements, and evaluate code state separately from usage. It deliberately stays
+Codex-CLI-native and does not import that project's harness. It also records the
+arm order so studies can reverse it across repetitions. See the package README for
+the runnable protocol. This makes measurements auditable; it does not itself show
+that the Skill saves tokens.
+
+Runner schema 4 adds an auditable shared command-environment override: Codex is resolved before overrides, both arms receive the same JSON environment, and summaries record only override keys plus a canonical hash. The values stay local and should contain no credentials. A controlled P101 rerun exposed material environment confounding in the earlier P101 result:
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 101-C | baseline → Skill | 184,083 | 199,549 | +8.4% | 164,608 / 179,328 | 18 / 17 | 61.692 / 66.293 s |
+| 101-D | Skill → baseline | 168,866 | 203,260 | +20.4% | 153,984 / 170,112 | 18 / 16 | 59.880 / 63.918 s |
+
+Pooling the controlled runs, the Skill used 402,809 versus 352,949 tokens (+14.1%) and 130.211 versus 121.572 seconds (+7.1%), while reducing tool actions from 36 to 33. Both arms had successful runner exits. This reverses the earlier P101 token result; the earlier uncontrolled P101 should not be used to claim savings. Both arms independently passed the same 23-test auth suite and changed-file Ruff in the shared Python 3.13 environment. All 10 pre-existing test functions remained AST-equivalent, both arms added the malformed-port regression, and changes were limited to `server.py` and `test_auth.py`. The result is quality-passing, but it does not support an efficacy claim. Raw traces are local at `/tmp/jev-p101-controlled/run-a` and `run-b`.
+
+A one-pair exploratory Skill revision (101-E) added explicit recovery guidance for missing paths and unavailable search tools. On the same controlled task, the baseline used 167,080 tokens, 18 actions, and 61.551 seconds; the revision used 235,940 tokens (+41.2%), 21 actions, and 73.444 seconds (+19.3%). Both independently passed 23 auth tests and changed-file Ruff, with all 10 prior test functions preserved. The trace shows more fallback/path-probing commands under the revision. This is one baseline-first run, so it is a rejection signal rather than an efficacy estimate; the revision was not adopted. The task's file names were relative to a nested package without naming the package root, a likely source of the extra exploration. Full local trace paths and metrics are recorded in the benchmark JSON.
+
+Runner schema 5 adds `--exposure-mode discovered`: both arms now receive the exact same task prompt, and only the candidate workspace contains a discoverable Skill. A trace audit checks whether the full Skill text appeared in a command output. This avoids the previous forced-invocation and duplicate-read bias; a failed later command in a shell chain does not erase evidence that the preceding `sed` successfully exposed the Skill.
+
+### Automatic-discovery counterbalanced repeats: P100 and P101
+
+Both tasks loaded the Skill in both candidate runs. On duplicate-key parser hardening, the candidate used 12.0% fewer tokens when second, then 10.4% more when first; pooled usage was 394,160 versus 400,424 (−1.6%), with 30 versus 34 tool actions and effectively tied time. All four arms passed the same 19 tests and changed-file Ruff after the agents corrected one import-order finding.
+
+On malformed `JEV_PORT` validation, the candidate used 11.0% fewer tokens when second, then 8.8% more when first; pooled usage was 405,459 versus 414,107 (−2.1%), with 35 versus 37 tool actions and 1.4% more elapsed time. All four arms passed the 23-test auth/config suite and changed-file Ruff. Across these two task families, candidate usage is lower by only 2.0% pooled, while each task reverses direction by run order. These results do not support stable savings; the earlier larger reductions came from treatment-only Skill injection or uncontrolled command environments. No 50% or multi-fold effect is visible.
+
+One attempted Skill revision added more instructions for missing paths and unavailable search tools. In its sole baseline-first exploratory pair it used 41.2% more tokens and 19.3% more time, so it was rejected. More instructions are not an acceptable substitute for measured savings. Full per-pair metrics and audit caveats are in [skill-benchmarks.json](skill-benchmarks.json).
+
+Runner schema 3 fixes the earlier uncertain Skill-exposure measure: it injects
+the exact candidate Skill text into that arm's prompt and a neutral section into
+the baseline, records separate common task and per-arm input hashes, and requires
+the Skill to be absent from baseline and present with the expected hash in
+treatment. The Skill text's own input-token cost is included in the comparison.
+
+### Local pilot 100: duplicate JSON keys, explicit Skill injection
+
+P100 evaluated a security-focused response-parser change. It rejected duplicate
+JSON object keys at any nesting level and added a regression using raw response
+bytes through `evaluate()`/`MockTransport`. The candidate Skill text was explicitly
+injected and hash-verified; both orders used the same task prompt (SHA-256
+`feafb5a0c963dabd2fae5cd1ef23850e3c543f896049baef89e9192d1b010fcb`), tracked
+source tree (`40953cdfbe63ef5907249d6daa163a24e57d3a63`), gpt-5.5, Codex CLI
+0.143.0, medium reasoning, and medium verbosity.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 100-A | baseline → Skill | 382,186 | 286,477 | −25.0% | 342,016 / 250,112 | 28 / 24 | 132.845 / 115.259 s |
+| 100-B | Skill → baseline | 369,179 | 356,133 | −3.5% | 334,080 / 323,840 | 26 / 22 | 102.047 / 100.923 s |
+
+Pooled usage was 642,610 Skill versus 751,365 baseline tokens (−14.5%), 46
+versus 54 tool actions, and 216.182 versus 234.892 seconds. Both patches passed
+the same 19-test core suite and changed-file Ruff in a shared cached environment;
+all pre-existing test functions were AST-equivalent and the duplicate-key smoke
+case returned the safe malformed-response error. The in-run pytest commands
+initially failed collection in both arms because the src-layout wasn't on
+`PYTHONPATH` and the global MCP dependency was incompatible; the independent
+shared-environment reruns passed without product-code changes. Native Git
+worktree checkout stalled, so fresh local repositories were initialized from the
+same exported tracked tree; commit metadata differs from the public source commit.
+This is a promising result on one task family, not proof of a general or stable
+50% saving. Full details are in [skill-benchmarks.json](skill-benchmarks.json).
+
+### Local pilot 101: malformed port configuration, second task family
+
+P101 tested whether Skill benefits generalize beyond response parsing. The task
+made `create_server()` return a stable `JEV_PORT` validation message for malformed
+integer values, with regressions for `abc`, `1.5`, and whitespace. It used the same
+gpt-5.5/Codex 0.143.0/medium settings and explicit schema-3 Skill injection as P100,
+with a distinct common prompt (SHA-256
+`704cd44c862ae140c6de886ffbe48cf89332f341a8f4416f28a2c0fd6be261de`).
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 101-A | baseline → Skill | 397,139 | 372,080 | −6.3% | 350,208 / 342,400 | 32 / 29 | 129.086 / 115.205 s |
+| 101-B | Skill → baseline | 421,649 | 362,406 | −14.0% | 378,624 / 329,728 | 36 / 27 | 140.500 / 118.028 s |
+
+Pooled usage was 734,486 Skill versus 818,788 baseline tokens (−10.3%), 56
+versus 68 tool actions, and 233.233 versus 269.586 seconds. All four arms passed
+the same 23-test auth/config suite and changed-file Ruff in the shared locked
+environment; AST comparison found all pre-existing tests unchanged. Both patches
+were limited to `server.py` and `test_auth.py` and preserved valid/default/range
+behavior. The direction agrees with P100 on a distinct configuration task family,
+but the modest reductions and small sample do not demonstrate stable general
+savings or meet the 50% target. Full details are in
+[skill-benchmarks.json](skill-benchmarks.json).
+
+### Local pilot 099: serialized request-size boundary, two order-balanced pairs
+
+P099 repeated the request-byte-boundary test task from a clean source commit with
+the current Skill and no-Skill baseline. Both arms used the same 688-byte prompt
+(SHA-256 `c2bb58df8efb69b1e99fdf68e5f26e285769a14019e544efa2cd4ef9f3bd8f99`),
+Codex CLI 0.143.0, gpt-5.5, medium reasoning effort, and medium verbosity. The
+runner captured settings and traces. The trace parser did not consistently detect
+successful full-text Skill reads in all four arms, so treatment exposure is not
+fully verified and the token comparison is descriptive.
+
+| Pair | Order | Baseline total tokens | Skill total tokens | Change | Cached input (baseline/Skill) | Tool actions (baseline/Skill) | Time (baseline/Skill) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 099-A | baseline → Skill | 181,129 | 173,684 | −4.1% | 151,936 / 151,936 | 15 / 12 | 73.661 / 71.418 s |
+| 099-B | Skill → baseline | 185,387 | 231,327 | +24.8% | 153,984 / 184,832 | 18 / 17 | 89.316 / 81.993 s |
+
+Pooled usage was 405,011 Skill versus 366,516 baseline tokens (+10.5%), while
+actions were 29 versus 33 and elapsed time was 153.411 versus 162.977 seconds.
+Both arms passed the requested boundary checks; AST comparison found no changed
+pre-existing test functions. P099-A had a test-count difference because the
+candidate combined exact-size and one-byte-over checks in one test. One baseline
+also applied import-only Ruff cleanup to unrelated files; the other candidate
+kept its patch scoped. This one task family is noisy and did not establish a token
+saving. Full run data and caveats are in [skill-benchmarks.json](skill-benchmarks.json).
+
+An attempted reverse-order rerun against earlier copied snapshots was rejected as
+evidence: those directories lacked Git metadata, so `git rev-parse` resolved the
+outer repository, and their 739b583 code already contained the requested Go fix.
+The runner now requires each input to be a clean Git worktree root at the stated
+commit and checks Skill hashes before launching a model. No token result from that
+rerun is included as a Skill effect estimate.
+
+### Local pilot 098: failure-aware Skill wording, two order-balanced pairs
+
+P098 tested a safer revision of the concise-check instruction on the same Go output
+task, prompt SHA-256 `1df707666bdc738498814071db438e55bd4475dd7ff00f55071bd50b84d34a50`,
+source commit `b49a52faf67ec29eb22caaeff56002678ef13252`, and Codex CLI 0.143.0.
+Each arm loaded its verified Skill; the runner checked clean worktree roots and
+matching HEADs before both arms. Order was baseline → candidate, then candidate →
+baseline on newly recreated worktrees.
+
+| Pair | Order | Baseline total tokens | Candidate total tokens | Change | Cached input (baseline/candidate) | Tool actions (baseline/candidate) | Time (baseline/candidate) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 098-A | baseline → candidate | 128,020 | 123,453 | −3.6% | 112,256 / 105,088 | 9 / 10 | 44.133 / 52.568 s |
+| 098-B | candidate → baseline | 104,514 | 124,624 | +19.2% | 86,272 / 109,184 | 8 / 10 | 44.043 / 45.532 s |
+
+Pooled candidate usage was 248,077 versus 232,534 baseline tokens (+6.7%), 20 versus
+17 tool actions, and 98.100 versus 88.176 seconds. The direction reversed with run
+order, so these repetitions show no reliable token saving. All four arms passed the
+requested focused tests (11 each) and Ruff. A broader output probe found both
+implementations still compact build-failure and bare `FAIL` summaries; this was a
+shared safety limitation, not a measured candidate-only regression. Do not promote
+the candidate or count P098 as a quality-preserving efficiency win. Full per-run
+usage and caveats are in [skill-benchmarks.json](skill-benchmarks.json).

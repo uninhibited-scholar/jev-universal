@@ -1,0 +1,23 @@
+{
+  "name": "jev-universal",
+  "interface": {
+    "displayName": "Jev Universal"
+  },
+  "plugins": [
+    {
+      "name": "jev-universal",
+      "source": {
+        "source": "local",
+        "path": "./jev-universal"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity",
+      "interface": {
+        "displayName": "Jev Universal"
+      }
+    }
+  ]
+}

@@ -2,6 +2,55 @@
 
 Cross-client Jev tools over MCP. [Repository overview](../README.md) · [中文](docs/README.zh-CN.md)
 
+## Reproducible development-skill comparisons
+
+`scripts/run_skill_pair.py` runs one exact prompt against two frozen Git workspaces
+with a pinned Codex model, reasoning effort, response verbosity, and caller-selected order. Both workspaces must have the
+same `HEAD`, be separate real Git worktree roots, and have no changes beyond the
+candidate Skill file; baseline must omit the Skill. The runner explicitly injects
+the exact Skill text into candidate input and sends a neutral instruction section
+to baseline, while keeping the task text identical. This makes Skill exposure
+verifiable and includes Skill input overhead in the token comparison. Set
+`--skill-path` if the Skill is outside the workspace root, and pass the expected
+candidate Skill hash. Run once as `baseline-first` and once as
+`candidate-first` for an order-balanced pair. The runner writes raw local traces,
+stderr, and a JSON summary with prompt/Skill hashes, token counts, cached input,
+tool actions, elapsed time, exit status, reasoning/verbosity settings, and the
+injected Skill/task-prompt hashes. Pass `--command-env-json` to apply the same
+test/runtime environment overrides to both arms, such as a locked interpreter
+`PATH` or `PYTHONPATH`; the summary stores variable names and a configuration hash,
+never values. Do not put credentials in that file. It does
+not judge patch quality: check
+the same tests and behavior in both arms separately. Raw traces may contain private
+prompt or repository data; review before sharing.
+
+Example:
+
+```sh
+python scripts/run_skill_pair.py \
+  --baseline /path/to/baseline-worktree \
+  --candidate /path/to/candidate-worktree \
+  --prompt /path/to/task.txt \
+  --commit <shared-git-commit> --model gpt-5.5 \
+  --reasoning-effort medium --verbosity medium \
+  --skill-path .agents/skills/jev-dev-efficient/SKILL.md \
+  --baseline-skill-sha256 <baseline-hash> \
+  --candidate-skill-sha256 <candidate-hash> \
+  --command-env-json /path/to/shared-test-env.json \
+  --order baseline-first --out /path/to/results-a
+```
+
+The optional environment file is a JSON object, for example
+`{"PATH":"/path/to/shared-venv/bin:/usr/bin:/bin","PYTHONPATH":"src"}`.
+The runner resolves Codex CLI on its original `PATH` before applying overrides.
+
+The agent can modify its workspace. For the reverse-order run, recreate clean
+worktrees at the same commit and reinstall the same Skill files, then use
+`--order candidate-first` and a new empty output directory. Rotate which task gets
+each order across a multi-task study.
+Use the reported `total_tokens`, not cache-adjusted estimates, and report the
+cached-input subset separately. Token savings alone do not establish equal quality.
+
 ## Install
 
 From this package directory (the inner `jev-universal` directory):
@@ -110,3 +159,13 @@ Context tool example:
 All-pinned requests make no TypeSafe call. With any unpinned chunk, the supplied
 state is sent for relevance evaluation, including pinned context. Pinning prevents
 omission, not transmission.
+
+### Local Kev applicability gate
+
+With a local Kev server running on port 8009, query whether a development task needs this Skill:
+
+```sh
+python scripts/kev_gate.py "Trace an authentication failure across configuration and tests"
+```
+
+The gate returns `use` only when Kev's `use` probability reaches 0.8. Treat lower-confidence cases as `use`; a `skip` result only omits the exploratory Skill workflow and never omits tests.

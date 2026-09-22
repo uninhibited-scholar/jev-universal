@@ -9,6 +9,10 @@ from mcp.server.auth.provider import AccessToken
 
 def https_url(value: str, label: str) -> str:
     parts = urlsplit(value)
+    try:
+        port = parts.port
+    except ValueError as exc:
+        raise ValueError(f"{label} must include a valid port in 1-65535 when specified") from exc
     if (
         parts.scheme != "https"
         or not parts.hostname
@@ -20,6 +24,8 @@ def https_url(value: str, label: str) -> str:
         raise ValueError(
             f"{label} must be an absolute HTTPS URL without credentials/query/fragment"
         )
+    if port is not None and not 1 <= port <= 65535:
+        raise ValueError(f"{label} must include a valid port in 1-65535 when specified")
     return value
 
 

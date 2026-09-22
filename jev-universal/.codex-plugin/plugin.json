@@ -1,16 +1,19 @@
 {
   "name": "jev-universal",
   "version": "0.2.0",
-  "description": "Jev-inspired efficient development Skill with an optional TypeSafe MCP adapter",
+  "description": "Jev-inspired development Skill with an experimental Codex output hook and optional TypeSafe MCP adapter",
   "author": {
-    "name": "Local developer"
+    "name": "Jev Universal contributors"
   },
+  "repository": "https://github.com/uninhibited-scholar/jev-universal",
+  "license": "MIT",
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Jev Universal",
     "shortDescription": "Efficient, evidence-led development",
-    "longDescription": "A portable development Skill for focused exploration, fewer retries, and right-sized verification. No TypeSafe login or API required; the API adapter is optional.",
-    "developerName": "Local developer",
+    "longDescription": "A portable development Skill for focused exploration, fewer retries, and right-sized verification, plus an experimental Codex hook that compacts large command output. No TypeSafe login or API is required for the Skill or hook; the API adapter is optional.",
+    "developerName": "Jev Universal contributors",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": "Apply the Jev-inspired efficient development workflow to this task."

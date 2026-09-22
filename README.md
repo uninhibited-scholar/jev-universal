@@ -18,17 +18,47 @@ directory supported by your AI client, then start a new conversation. Or copy
 the `SKILL.md` instructions into the assistant's project/user instructions.
 No API key or login is needed.
 
-Use it selectively for unfamiliar failures spanning components, noisy command
-output, or repeated diagnosis. Skip it for localized changes with known source
-and acceptance checks. No tested version has shown reliable token savings. On
-the repeated Zed feature task, two compact candidate versions used 39.0% and
-43.8% more total tokens; one earlier cross-layer bug pair used 0.7% more. See
-the [pilot and research notes](jev-universal/docs/efficiency-research.md) for
-the full evidence and limits.
+Use it selectively for unfamiliar multi-file features, bugs, or debugging
+tasks, especially when the relevant implementation is not yet clear. Skip it
+for localized changes with known source and acceptance checks. After a clean
+no-Skill comparison showed no savings from the longer version, we iterated on
+the Skill and its runner. The latest 1,123-character version used 35.1% fewer
+tokens across two same-prompt, order-balanced repetitions of an output-recall
+CLI feature; it also used 28 fewer tool actions and 33.9% less time. All 52
+package tests passed in each arm. This is one task family, so it does not
+establish general savings. On a distinct OAuth URL-validation bugfix, this
+same Skill used 26.0% more tokens, despite fewer tool actions and slightly
+lower elapsed time. Earlier P077/P078 results used an extra “read the Skill”
+treatment instruction and are not clean estimates of Skill efficacy.
+The 2x target remains unmet. See the
+[pilot and research notes](jev-universal/docs/efficiency-research.md)
+for the full evidence and limits.
 
 The target remains at least 2x fewer total tokens, with 10x as a stretch goal.
-Neither has been demonstrated. The Skill is an experimental workflow prompt,
-not a proven efficiency improvement; evaluation continues.
+Neither target has been demonstrated. The Skill is an experimental workflow
+prompt, not a proven general efficiency improvement; evaluation continues.
+
+## Optional: Codex large-output hook
+
+The plugin also contains an experimental Codex-only hook that replaces large
+Bash results with a short preview and a local recall command. In four
+order-balanced pairs (eight runs) on two test-heavy coding tasks, it reduced
+combined total tokens by 9.5%;
+the larger task varied from 6.3% to 20.6% savings when run order reversed. This
+is not a multi-fold result and does not apply to Claude, Kimi, or ZCode. The
+hook needs no API key or network service. Captured output is recallable for one
+hour; expired files are pruned opportunistically. It skips recognized test
+failures and likely secret patterns.
+Install the GitHub marketplace entry with Codex CLI:
+
+```sh
+codex plugin marketplace add uninhibited-scholar/jev-universal --ref main --sparse .agents/plugins --sparse jev-universal
+codex plugin add jev-universal@jev-universal
+```
+
+Then review and trust the bundled hook with `/hooks`. See the [hook notes and
+measurements](jev-universal/docs/efficiency-research.md). The Skill can be used
+in other clients, but this automatic output hook currently runs only in Codex.
 
 ## Optional: TypeSafe API adapter
 
